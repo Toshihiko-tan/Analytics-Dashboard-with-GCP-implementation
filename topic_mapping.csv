@@ -1,0 +1,20 @@
+Topic,TopicID
+Disability,DIS
+Arthritis,ART
+Immunization,IMM
+Diabetes,DIA
+Health Status,HEA
+Alcohol,ALC
+Asthma,AST
+Sleep,SLEP
+Oral Health,ORH
+Mental Health,MEN
+Cardiovascular Disease,CVD
+Cancer,CAN
+Tobacco,TOB
+"Nutrition, Physical Activity, and Weight Status",NPAW
+Chronic Obstructive Pulmonary Disease,COPD
+Social Determinants of Health,SDOH
+Cognitive Health and Caregiving,CHC
+Maternal Health,MAT
+Chronic Kidney Disease,CKD

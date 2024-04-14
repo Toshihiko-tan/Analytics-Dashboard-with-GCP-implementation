@@ -1,0 +1,27 @@
+Stratification1,StratificationID1
+Age >=65,AGE65P
+Female,SEXF
+Male,SEXM
+Overall,OVR
+Age 18-44,AGE1844
+Age 45-64,AGE4564
+"American Indian or Alaska Native, non-Hispanic",AIAN
+"White, non-Hispanic",WHT
+"Black, non-Hispanic",BLK
+"Asian or Pacific Islander, non-Hispanic",API
+Hispanic,HIS
+"Hawaiian or Pacific Islander, non-Hispanic",HAPI
+Age 6-11,AGE6_11
+Age 6-9,AGE6_9
+"Asian, non-Hispanic",ASN
+Grade 10,GRD10
+Grade 11,GRD11
+"Multiracial, non-Hispanic",MRC
+Age 1-5,AGE1_5
+Age 6-14,AGE6_14
+Age 4 m - 5 y,AGE4M5Y
+Age 0-44,AGE0_44
+Grade 12,GRD12
+Grade 9,GRD9
+Age 12-17,AGE1217
+Age 10-13,AGE1013
