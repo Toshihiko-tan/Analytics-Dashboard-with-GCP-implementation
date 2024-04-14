@@ -8,7 +8,6 @@ from dash import html
 import plotly.express as px
 import pandas as pd
 import numpy as np
-from data_cleaning_module import df
 
 
 app = dash.Dash(__name__)
