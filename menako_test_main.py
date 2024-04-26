@@ -19,6 +19,7 @@ quantitative_columns = df.select_dtypes(include=['float64', 'int64']).columns
 
 state_count = df['LocationAbbr'].value_counts().reset_index()
 state_count.columns = ['LocationAbbr', 'Count']
+
 # Setup the layout of the Dash app
 app.layout = html.Div([
     html.H1("Dataframe Overview"),
