@@ -80,13 +80,28 @@ app.layout = html.Div([
     ]),
     dcc.Graph(id='us-heatmap-DIA02'),
     html.Div([
-        dcc.Dropdown(
-            id='datatype',
-            options=[{'label': col, 'value': col} for col in ['AGEADJPREV', 'CRDRATE']],
+        dcc.Slider(
+            id='year-slider-3',
+            min=min_year,
+            max=2021,
+            value=2021,
+            marks={str(year): str(year) for year in range(min_year, 2021 + 1)},
+            step=1
         ),
         dcc.Graph(id='pivot_table'),
+    ]),
+    html.Div([
+        dcc.Slider(
+            id='year-slider-4',
+            min=min_year,
+            max=2021,
+            value=2021,
+            marks={str(year): str(year) for year in range(min_year, 2021+1)},
+            step=1
+        ),
+        dcc.Graph(id='gender-bar-plot'),
     ])
-])
+])    
 
 
 # Callback for updating the bar chart
@@ -178,25 +193,25 @@ def update_us_heatmap(selected_year):
 # Callback for state and race
 @app.callback(
     Output('pivot_table', 'figure'),
-    Input('datatype', 'value')
+    Input('year-slider-3', 'value')
 )
-def state_race(selected_type):
+def state_race(selected_year):
     filtered_data = df[(df['QuestionID'] == 'DIA04') &
                     (df['StratificationCategoryID1'] == 'RACE') &
-                    (df['DataValueTypeID'] == selected_type)]
+                    (df['DataValueTypeID'] == 'CRDRATE') &
+                    (df['Year'] == selected_year)]
     pivot_data = filtered_data.pivot_table(
     values='DataValue',
     index='StratificationID1', 
     columns='LocationAbbr', 
     )
 
-# Create a heatmap using Plotly 
     fig = px.imshow(
         pivot_data,
         labels=dict(x="State", y="Race", color="Mortality Rate"),
         x=pivot_data.columns,
         y=pivot_data.index,
-        title=f"Diabetes Ketoacidosis Mortality Rate (for Type {selected_type}) per 100,000 by State and Race",
+        title=f"Diabetes Ketoacidosis Mortality Rate per 100,000 by State and Race in {selected_year}",
         aspect="auto",
         color_continuous_scale='Blues'
     )
@@ -204,6 +219,39 @@ def state_race(selected_type):
     # Adding text to each cell manually
     fig.update_traces(texttemplate="%{z:.1f}", textfont={"size": 10})
     return fig
+
+# Create gender comparison bar plot
+@app.callback(
+    Output('gender-bar-plot', 'figure'),
+    Input('year-slider-4', 'value')
+)
+
+def gender_bar_plot(selected_year):
+    gender_filtered_data = df[
+        (df['QuestionID'] == 'DIA04') &
+        (df['Year'] == selected_year) &
+        (df['StratificationCategoryID1'] == 'SEX') &
+        (df['DataValueTypeID'] == 'CRDRATE')
+    ]
+    pivot_gender_data = gender_filtered_data.pivot_table(
+        values='DataValue',
+        index='LocationAbbr',
+        columns='StratificationID1',
+    )
+    # Create a bar plot using Plotly to compare male vs. female diabetes mortality rates by state
+    fig = px.bar(
+        pivot_gender_data.reset_index(),
+        x='LocationAbbr',
+        y=['SEXF', 'SEXM'],
+        title=f"Comparison of Male vs. Female Ketoacidosis Diabetes Mortality Rates by State in {selected_year}",
+        labels={'value': 'Mortality Rate per 100,000', 'variable': 'Gender'},
+        barmode='group',
+        color_discrete_map={'SEXF': 'pink', 'SEXM': 'lightblue'}
+    )
+    return fig
+
+
+
 # # Callback for updating the correlation heatmap
 # @app.callback(
 #     Output('correlation-heatmap', 'figure'),
