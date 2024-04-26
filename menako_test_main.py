@@ -17,9 +17,8 @@ app = dash.Dash(__name__)
 categorical_columns = df.select_dtypes(include=['object']).columns
 quantitative_columns = df.select_dtypes(include=['float64', 'int64']).columns
 
-state_column = 'LocationAbbr'
-
-
+state_count = df['LocationAbbr'].value_counts().reset_index()
+state_count.columns = ['LocationAbbr', 'Count']
 # Setup the layout of the Dash app
 app.layout = html.Div([
     html.H1("Dataframe Overview"),
@@ -126,10 +125,10 @@ def update_heatmap(_):
 )
 def update_us_heatmap(_):
     fig = px.choropleth(
-        df, 
-        locations=state_column, 
+        state_count, 
+        locations='LocationAbbr', 
         locationmode="USA-states", 
-        color="Count",  # This should be the column from your DataFrame that holds the counts
+        color='Count',  # This should be the column from your DataFrame that holds the counts
         scope="usa",
         title="Counts by State"
     )
