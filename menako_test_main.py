@@ -8,7 +8,7 @@ import numpy as np
 
 # Load the DataFrame
 df = pd.read_csv(r"diabetes_data.csv")
-
+cleaned_df = pd.read_csv(r"cleaned_data.csv")
 
 
 # Initialize the Dash app
@@ -20,8 +20,9 @@ quantitative_columns = df.select_dtypes(include=['float64', 'int64']).columns
 
 state_count = df['LocationAbbr'].value_counts().reset_index()
 state_count.columns = ['LocationAbbr', 'Count']
-
-df['Year'] = pd.to_datetime(df['Year'], format='%Y')
+min_year = int(df['Year'].min())
+max_year = int(df['Year'].max())
+# df['Year'] = pd.to_datetime(df['Year'], format='%Y')
 
 
 
@@ -57,41 +58,27 @@ app.layout = html.Div([
         dcc.Graph(id='us-heatmap')
     ]),
     html.Div([
-        dcc.Dropdown(
-            id='indicator-dropdown',
-            options=[{'label': i, 'value': i} for i in df['Indicator'].unique()],
-            value=df['Indicator'].unique()[0]
+        dcc.Slider(
+            id='year-slider-1',
+            min=min_year,
+            max=max_year,
+            value=max_year,
+            marks={str(year): str(year) for year in range(min_year, max_year + 1)},
+            step=1
         ),
     ]),
+    dcc.Graph(id='us-heatmap-DIA01'),
     html.Div([
         dcc.Slider(
-            id='year-slider',
-            min=df['Year'].dt.year.min(),
-            max=df['Year'].dt.year.max(),
-            value=df['Year'].dt.year.min(),
-            marks={str(year): str(year) for year in df['Year'].dt.year.unique()},
-            step=None
-        )
+            id='year-slider-2',
+            min=min_year,
+            max=max_year,
+            value=max_year,
+            marks={str(year): str(year) for year in range(min_year, max_year + 1)},
+            step=1
+        ),
     ]),
-    dcc.Graph(id='us-heatmap')
-        html.Div([
-            dcc.Dropdown(
-                id='x-axis-dropdown',
-                options=[{'label': col, 'value': col} for col in quantitative_columns],
-                value=quantitative_columns[0] if len(quantitative_columns) > 0 else None
-            ),
-            dcc.Dropdown(
-                id='y-axis-dropdown',
-                options=[{'label': col, 'value': col} for col in quantitative_columns],
-                value=quantitative_columns[1] if len(quantitative_columns) > 1 else quantitative_columns[0]
-            ),
-            dcc.Graph(id='regression-plot')
-        ], style={'width': '50%', 'display': 'inline-block'}),
-
-        html.Div([
-            dcc.Graph(id='correlation-heatmap')
-        ], style={'width': '50%', 'display': 'inline-block'})
-    ])
+    dcc.Graph(id='us-heatmap-DIA02')
 ])
 
 
@@ -117,6 +104,8 @@ def update_boxplot(selected_column):
         return fig
     return {}
 
+
+# Callback for updating the us-heatmap for counts
 @app.callback(
     Output('us-heatmap', 'figure'),
     Input('table', 'data')
@@ -132,51 +121,66 @@ def update_us_heatmap(_):
     )
     return fig
 
+
+# Callback for us-heatmap for DIA01
 @app.callback(
-    Output('us-heatmap', 'figure'),
-    [Input('indicator-dropdown', 'value'), Input('year-slider', 'value')]
+    Output('us-heatmap-DIA01', 'figure'),
+    [Input('year-slider-1', 'value')]
 )
-def update_us_heatmap(selected_indicator, selected_year):
-    filtered_df = df[(df['Indicator'] == selected_indicator) &
-                     (df['Year'].dt.year == selected_year)]
-    
+def update_us_heatmap(selected_year):
+    filtered_df = df[(df['QuestionID'] == 'DIA01') &
+                     (df['StratificationCategoryID1'] == 'OVERALL') &
+                     (df['DataValueTypeID'] == 'CRDPREV') &
+                     (df['Year'] == selected_year)]
+
     fig = px.choropleth(
         filtered_df,
-        locations='LocationAbbr',  # This column should have state abbreviations
+        locations='LocationAbbr',  # State abbreviations
         locationmode="USA-states",
-        color="Value",  # This should be the column with the data you want to visualize
+        color='DataValue',  # Data to be visualized
         scope="usa",
-        title=f"{selected_indicator} by State in {selected_year}",
+        title=f"Data for Question: \"Diabetes among adults\" in {selected_year}",
         color_continuous_scale=px.colors.sequential.Teal,
-        labels={'Value': 'Indicator Value'}
+        labels={'DataValue': 'Value'}
     )
-    fig.update_layout(geo=dict(bgcolor= 'rgba(0,0,0,0)'))
     return fig
 
-# Callback for updating the regression plot
+# Callback for us-heatmap for DIA02
 @app.callback(
-    Output('regression-plot', 'figure'),
-    [Input('x-axis-dropdown', 'value'), Input('y-axis-dropdown', 'value')]
+    Output('us-heatmap-DIA02', 'figure'),
+    [Input('year-slider-2', 'value')]
 )
-def update_regression_plot(x_col, y_col):
-    if x_col and y_col:
-        fig = px.scatter(df, x=x_col, y=y_col, trendline="ols", title=f"Regression between {x_col} and {y_col}")
-        return fig
-    return {}
+def update_us_heatmap(selected_year):
+    filtered_df = df[(df['QuestionID'] == 'DIA02') &
+                     (df['StratificationCategoryID1'] == 'OVERALL') &
+                     (df['DataValueTypeID'] == 'CRDPREV') &
+                     (df['Year'] == selected_year)]
 
-# Callback for updating the correlation heatmap
-@app.callback(
-    Output('correlation-heatmap', 'figure'),
-    Input('table', 'data')
-)
-def update_heatmap(_):
-    corr = df[quantitative_columns].corr()
-    fig = px.imshow(corr, text_auto=True,
-                    labels=dict(x="Variables", y="Variables", color="Correlation"),
-                    x=quantitative_columns,
-                    y=quantitative_columns,
-                    title="Correlation Heatmap")
+    fig = px.choropleth(
+        filtered_df,
+        locations='LocationAbbr',  # State abbreviations
+        locationmode="USA-states",
+        color='DataValue',  # Data to be visualized
+        scope="usa",
+        title=f"Data for Question: \"Gestational diabetes among women with a recent live birth\" in {selected_year}",
+        color_continuous_scale=px.colors.sequential.Teal,
+        labels={'DataValue': 'Value'}
+    )
     return fig
+
+# # Callback for updating the correlation heatmap
+# @app.callback(
+#     Output('correlation-heatmap', 'figure'),
+#     Input('table', 'data')
+# )
+# def update_heatmap(_):
+#     corr = df[quantitative_columns].corr()
+#     fig = px.imshow(corr, text_auto=True,
+#                     labels=dict(x="Variables", y="Variables", color="Correlation"),
+#                     x=quantitative_columns,
+#                     y=quantitative_columns,
+#                     title="Correlation Heatmap")
+#     return fig
 
 
 if __name__ == '__main__':
