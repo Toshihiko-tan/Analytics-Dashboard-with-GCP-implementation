@@ -78,7 +78,14 @@ app.layout = html.Div([
             step=1
         ),
     ]),
-    dcc.Graph(id='us-heatmap-DIA02')
+    dcc.Graph(id='us-heatmap-DIA02'),
+    html.Div([
+        dcc.Dropdown(
+            id='datatype',
+            options=[{'label': col, 'value': col} for col in ['AGEADJPREV', 'CRDRATE']],
+        ),
+        dcc.Graph(id='pivot_table'),
+    ])
 ])
 
 
@@ -168,6 +175,35 @@ def update_us_heatmap(selected_year):
     )
     return fig
 
+# Callback for state and race
+@app.callback(
+    Output('pivot_table', 'figure'),
+    Input('datatype', 'value')
+)
+def state_race(selected_type):
+    filtered_data = df[(df['QuestionID'] == 'DIA04') &
+                    (df['StratificationCategoryID1'] == 'RACE') &
+                    (df['DataValueTypeID'] == selected_type)]
+    pivot_data = filtered_data.pivot_table(
+    values='DataValue',
+    index='StratificationID1', 
+    columns='LocationAbbr', 
+    )
+
+# Create a heatmap using Plotly 
+    fig = px.imshow(
+        pivot_data,
+        labels=dict(x="State", y="Race", color="Mortality Rate"),
+        x=pivot_data.columns,
+        y=pivot_data.index,
+        title=f"Diabetes Ketoacidosis Mortality Rate (for Type {selected_type}) per 100,000 by State and Race",
+        aspect="auto",
+        color_continuous_scale='Blues'
+    )
+
+    # Adding text to each cell manually
+    fig.update_traces(texttemplate="%{z:.1f}", textfont={"size": 10})
+    return fig
 # # Callback for updating the correlation heatmap
 # @app.callback(
 #     Output('correlation-heatmap', 'figure'),
