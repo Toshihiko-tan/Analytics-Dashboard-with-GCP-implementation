@@ -31,5 +31,9 @@ df = df[df['DataValueFootnote'].isna()]
 # Then, drop the two columns about footnote
 df = df.drop(columns=['DataValueFootnote', 'DataValueFootnoteSymbol'])
 
-df.to_csv('cleaned_data.csv')
+# df.to_csv('cleaned_data.csv')
+
+# %%
+df_diabete = df[df['TopicID'] == 'DIA']
+df_diabete.describe()
 # %%
