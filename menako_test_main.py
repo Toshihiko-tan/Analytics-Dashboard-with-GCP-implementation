@@ -20,6 +20,9 @@ quantitative_columns = df.select_dtypes(include=['float64', 'int64']).columns
 state_count = df['LocationAbbr'].value_counts().reset_index()
 state_count.columns = ['LocationAbbr', 'Count']
 
+df['Year'] = pd.to_datetime(df['Year'], format='%Y')
+
+
 # Setup the layout of the Dash app
 app.layout = html.Div([
     html.H1("Dataframe Overview"),
@@ -50,7 +53,25 @@ app.layout = html.Div([
     ]),
     html.Div([
         dcc.Graph(id='us-heatmap')
-    ])
+    ]),
+    html.Div([
+        dcc.Dropdown(
+            id='indicator-dropdown',
+            options=[{'label': i, 'value': i} for i in df['Indicator'].unique()],
+            value=df['Indicator'].unique()[0]
+        ),
+    ]),
+    html.Div([
+        dcc.Slider(
+            id='year-slider',
+            min=df['Year'].dt.year.min(),
+            max=df['Year'].dt.year.max(),
+            value=df['Year'].dt.year.min(),
+            marks={str(year): str(year) for year in df['Year'].dt.year.unique()},
+            step=None
+        )
+    ]),
+    dcc.Graph(id='us-heatmap')
 ])
 
 
@@ -87,10 +108,30 @@ def update_us_heatmap(_):
         locationmode="USA-states", 
         color='Count',  # This should be the column from your DataFrame that holds the counts
         scope="usa",
-        title="Counts by State"
+        title="Value Counts by State"
     )
     return fig
 
+@app.callback(
+    Output('us-heatmap', 'figure'),
+    [Input('indicator-dropdown', 'value'), Input('year-slider', 'value')]
+)
+def update_us_heatmap(selected_indicator, selected_year):
+    filtered_df = df[(df['Indicator'] == selected_indicator) &
+                     (df['Year'].dt.year == selected_year)]
+    
+    fig = px.choropleth(
+        filtered_df,
+        locations='LocationAbbr',  # This column should have state abbreviations
+        locationmode="USA-states",
+        color="Value",  # This should be the column with the data you want to visualize
+        scope="usa",
+        title=f"{selected_indicator} by State in {selected_year}",
+        color_continuous_scale=px.colors.sequential.Teal,
+        labels={'Value': 'Indicator Value'}
+    )
+    fig.update_layout(geo=dict(bgcolor= 'rgba(0,0,0,0)'))
+    return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
