@@ -1,0 +1,110 @@
+Question                                                                                                                                                                              ,QuestionID
+Adults with any disability                                                                                                                                                            ,DIS01
+Arthritis among adults                                                                                                                                                                ,ART01
+Influenza vaccination among adults                                                                                                                                                    ,IMM01
+Diabetes among adults                                                                                                                                                                 ,DIA01
+Life expectancy at birth                                                                                                                                                              ,HEA06
+Alcohol use among high school students                                                                                                                                                ,ALC01
+Current asthma among adults                                                                                                                                                           ,AST02
+"Asthma mortality among all people, underlying cause"                                                                                                                                 ,AST01
+Short sleep duration among adults                                                                                                                                                     ,SLP03
+All teeth lost among adults aged 65 years and older                                                                                                                                   ,ORH03
+Visited dentist or dental clinic in the past year among adults                                                                                                                        ,ORH06
+Depression among adults                                                                                                                                                               ,MEN02
+High blood pressure among adults                                                                                                                                                      ,CVD01
+"Coronary heart disease mortality among all people, underlying cause"                                                                                                                 ,CVD08
+"Invasive cancer (all sites combined), incidence"                                                                                                                                     ,CAN07
+2 or more chronic conditions among adults                                                                                                                                             ,HEA05
+"Invasive cancer (all sites combined) mortality among all people, underlying cause"                                                                                                   ,CAN08
+"Colon and rectum (colorectal) cancer mortality among all people, underlying cause"                                                                                                   ,CAN01
+"Cervical cancer mortality among all females, underlying cause"                                                                                                                       ,CAN03
+"Breast cancer mortality among all females, underlying cause"                                                                                                                         ,CAN02
+"Prostate cancer mortality among all males, underlying cause"                                                                                                                         ,CAN05
+"Lung and bronchial cancer mortality among all people, underlying cause"                                                                                                              ,CAN04
+Binge drinking prevalence among adults                                                                                                                                                ,ALC06
+Severe joint pain among adults with arthritis                                                                                                                                         ,ART03
+Current electronic vapor product use among high school students                                                                                                                       ,TOB02
+Fair or poor self-rated health status among adults                                                                                                                                    ,HEA01
+Physical inactivity among adults with arthritis                                                                                                                                       ,ART05
+"Diseases of the heart mortality among all people, underlying cause"                                                                                                                  ,CVD09
+Receipt of evidence-based preventive dental services in the past 12 months among children and adolescents aged 1-17 years                                                             ,ORH05
+Children and adolescents aged 6-13 years meeting aerobic physical activity guideline                                                                                                  ,NPW07
+High cholesterol among adults who have been screened                                                                                                                                  ,CVD03
+Received health care provider counseling for physical activity among adults with arthritis                                                                                            ,ART06
+Consumed regular soda at least one time daily among high school students                                                                                                              ,NPW05
+No leisure-time physical activity among adults                                                                                                                                        ,NPW06
+Activity limitation due to arthritis among adults with arthritis                                                                                                                      ,ART02
+Quit attempts in the past year among adult current smokers                                                                                                                            ,TOB06
+"Chronic obstructive pulmonary disease mortality among adults aged 45 years and older, underlying or contributing cause"                                                              ,COPD06
+"Diabetic ketoacidosis mortality among all people, underlying or contributing cause"                                                                                                  ,DIA04
+Visited dentist or other oral health care provider in the past 12 months among children and adolescents aged 1-17 years                                                               ,ORH04
+Recent activity limitation among adults                                                                                                                                               ,HEA04
+"Chronic obstructive pulmonary disease mortality among adults aged 45 years and older, underlying cause"                                                                              ,COPD05
+Lack of health insurance among adults aged 18-64 years                                                                                                                                ,SDH09
+"Chronic liver disease mortality among all people, underlying cause"                                                                                                                  ,ALC09
+"Hospitalization for heart failure as principal diagnosis, Medicare-beneficiaries aged 65 years and older"                                                                            ,CVD06
+Taking medicine to control high blood pressure among adults with high blood pressure                                                                                                  ,CVD02
+Unemployment rate among people 16 years and older in the labor force                                                                                                                  ,SDH08
+Provided care for someone with dementia or other cognitive impairment in the past month among adults                                                                                  ,CHC03
+Influenza vaccination among adults 18–64 who are at increased risk                                                                                                                    ,IMM02
+Binge drinking frequency among adults who binge drink                                                                                                                                 ,ALC04
+Chronic obstructive pulmonary disease among adults                                                                                                                                    ,COPD01
+Average recent physically unhealthy days among adults                                                                                                                                 ,HEA02
+"Diabetes mortality among all people, underlying or contributing cause"                                                                                                               ,DIA03
+Subjective cognitive decline among adults aged 45 years and older                                                                                                                     ,CHC01
+Short sleep duration among children aged 4 months to 14 years                                                                                                                         ,SLP01
+Obesity among adults                                                                                                                                                                  ,NPW14
+Consumed vegetables less than one time daily among high school students                                                                                                               ,NPW03
+Routine checkup within the past year among adults                                                                                                                                     ,SDH12
+Pneumococcal vaccination among adults aged 18–64 years who are at increased risk                                                                                                      ,IMM03
+Preventive dental care in the 12 months before pregnancy among women with a recent live birth                                                                                         ,ORH07
+Consumed fruit less than one time daily among high school students                                                                                                                    ,NPW01
+Frequent mental distress among adults                                                                                                                                                 ,MEN05
+Gestational diabetes among women with a recent live birth                                                                                                                             ,DIA02
+Average mentally unhealthy days among adults                                                                                                                                          ,MEN04
+"Met aerobic physical activity guideline for substantial health benefits, adults"                                                                                                     ,NPW09
+Have taken an educational class to learn how to manage arthritis symptoms among adults with arthritis                                                                                 ,ART07
+"Cerebrovascular disease (stroke) mortality among all people, underlying cause"                                                                                                       ,CVD07
+Postpartum depressive symptoms among women with a recent live birth                                                                                                                   ,MEN03
+"Hospitalization for chronic obstructive pulmonary disease as any diagnosis, Medicare-beneficiaries aged 65 years and older"                                                          ,COPD03
+Met aerobic physical activity guideline among high school students                                                                                                                    ,NPW08
+Pneumococcal vaccination among adults aged 65 years and older                                                                                                                         ,IMM04
+Discussed symptoms of subjective cognitive decline with a health care professional among adults aged 45 years and older with subjective cognitive decline                             ,CHC02
+Short sleep duration among high school students                                                                                                                                       ,SLP02
+Current tobacco use of any tobacco product among high school students                                                                                                                 ,TOB01
+Work limitation due to arthritis among adults aged 18-64 years with arthritis                                                                                                         ,ART04
+Obesity among high school students                                                                                                                                                    ,NPW13
+Current smoking among adults with chronic obstructive pulmonary disease                                                                                                               ,COPD02
+Provided care for a friend or family member in the past month among adults                                                                                                            ,CHC04
+Consumed fruit less than one time daily among adults                                                                                                                                  ,NPW02
+Consumed vegetables less than one time daily among adults                                                                                                                             ,NPW04
+Frequent physical distress among adults                                                                                                                                               ,HEA03
+Health insurance coverage after pregnancy among women with a recent live birth                                                                                                        ,SDH11
+Binge drinking intensity among adults who binge drink                                                                                                                                 ,ALC05
+Current cigarette smoking among adults                                                                                                                                                ,TOB04
+"Hospitalization for chronic obstructive pulmonary disease as principal diagnosis, Medicare-beneficiaries aged 65 years and older"                                                    ,COPD04
+Taking medicine for high cholesterol among adults                                                                                                                                     ,CVD04
+Binge drinking prevalence among high school students                                                                                                                                  ,ALC07
+"Proportion of the population protected by a comprehensive smoke-free policy prohibiting smoking in all indoor areas of workplaces and public places, including restaurants and bars" ,TOB07
+Per capita alcohol consumption among people aged 14 years and older                                                                                                                   ,ALC08
+Postpartum checkup among women with a recent live birth                                                                                                                               ,MAT01
+High school completion among adults aged 18-24                                                                                                                                        ,SDH02
+Current smokeless tobacco use among high school students                                                                                                                              ,TOB03
+Cigarette smoking during pregnancy among women with a recent live birth                                                                                                               ,TOB05
+Health insurance coverage in the month before pregnancy among women with a recent live birth                                                                                          ,SDH10
+Infants who were exclusively breastfed through 6 months                                                                                                                               ,NPW11
+Living below 150% of the poverty threshold among all people                                                                                                                           ,SDH01
+Incidence of treated end-stage kidney disease                                                                                                                                         ,CKD01
+No broadband internet subscription among households                                                                                                                                   ,SDH03
+Infants who were breastfed at 12 months                                                                                                                                               ,NPW10
+Food insecure in the past 12 months among households                                                                                                                                  ,SDH04
+No teeth lost among adults aged 18-64 years                                                                                                                                           ,ORH01
+Obesity among WIC children aged 2 to 4 years                                                                                                                                          ,NPW12
+Mammography use among women aged 50-74 years                                                                                                                                          ,CAN09
+Cervical cancer screening among women aged 21-65 years                                                                                                                                ,CAN10
+Colorectal cancer screening among adults aged 45-75 years                                                                                                                             ,CAN06
+Six or more teeth lost among adults aged 65 years and older                                                                                                                           ,ORH02
+Current poor mental health among high school students                                                                                                                                 ,MEN01
+Lack of reliable transportation in the past 12 months among adults                                                                                                                    ,SDH06
+Lack of social and emotional support needed among adults                                                                                                                              ,SDH07
+"Unable to pay mortgage, rent, or utility bills in the past 12 months among adults"                                                                                                   ,SDH05
