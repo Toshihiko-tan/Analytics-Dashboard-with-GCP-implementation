@@ -26,3 +26,7 @@ datavalue_type_mapping = df[['DataValueType', 'DataValueTypeID']].drop_duplicate
 stratification_category_mapping = df[['StratificationCategory1', 'StratificationCategoryID1']].drop_duplicates().set_index('StratificationCategory1').to_dict()['StratificationCategoryID1']
 stratification_mapping = df[['Stratification1', 'StratificationID1']].drop_duplicates().set_index('Stratification1').to_dict()['StratificationID1']
 location_mapping = df[['LocationDesc', 'LocationAbbr']].drop_duplicates().set_index('LocationDesc').to_dict()['LocationAbbr']
+
+# %%
+
+# %%
