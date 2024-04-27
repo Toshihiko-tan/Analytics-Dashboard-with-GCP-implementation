@@ -253,7 +253,7 @@ app.layout = html.Div([
 
 ])    
 
-
+# TODO: Separate into modules
 # Callback for updating the bar chart
 @app.callback(
     Output('bar-chart', 'figure'),
