@@ -433,7 +433,7 @@ def predict(n_clicks, location, year, dia02, dia03, dia04):
         test_data_encoded = ct.transform(test_data)
         # Make prediction
         prediction = model.predict(test_data_encoded)
-        return f'Predicted Outcome: {prediction[0]}'
+        return f'Predicted DIA01: {prediction[0]}'
 
     return 'Enter values and press predict.'
 
