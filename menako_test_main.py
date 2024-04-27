@@ -2,6 +2,7 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.express as px
+import plotly.graph_objs as go
 import pandas as pd
 from dash import dash_table
 import numpy as np
@@ -54,31 +55,37 @@ app.layout = html.Div([
             dcc.Graph(id='boxplot-chart')
         ], style={'width': '50%', 'display': 'inline-block'})
     ]),
+
     html.Div([
         dcc.Graph(id='us-heatmap')
     ]),
+
     html.Div([
-        dcc.Slider(
-            id='year-slider-1',
-            min=min_year,
-            max=max_year,
-            value=max_year,
-            marks={str(year): str(year) for year in range(min_year, max_year + 1)},
-            step=1
-        ),
+        html.Div([
+            dcc.Slider(
+                id='year-slider-1',
+                min=min_year,
+                max=max_year,
+                value=max_year,
+                marks={str(year): str(year) for year in range(min_year, max_year + 1)},
+                step=1
+            ),
+            dcc.Graph(id='us-heatmap-DIA01')
+        ], style={'width': '50%', 'display': 'inline-block'}),
+
+        html.Div([
+            dcc.Slider(
+                id='year-slider-2',
+                min=min_year,
+                max=2021,
+                value=2021,
+                marks={str(year): str(year) for year in range(min_year, 2021 + 1)},
+                step=1
+            ),
+            dcc.Graph(id='us-heatmap-DIA02')
+        ], style={'width': '50%', 'display': 'inline-block'})
     ]),
-    dcc.Graph(id='us-heatmap-DIA01'),
-    html.Div([
-        dcc.Slider(
-            id='year-slider-2',
-            min=min_year,
-            max=max_year,
-            value=max_year,
-            marks={str(year): str(year) for year in range(min_year, max_year + 1)},
-            step=1
-        ),
-    ]),
-    dcc.Graph(id='us-heatmap-DIA02'),
+    
     html.Div([
         dcc.Slider(
             id='year-slider-3',
@@ -90,6 +97,7 @@ app.layout = html.Div([
         ),
         dcc.Graph(id='pivot_table'),
     ]),
+
     html.Div([
         dcc.Slider(
             id='year-slider-4',
@@ -100,7 +108,15 @@ app.layout = html.Div([
             step=1
         ),
         dcc.Graph(id='gender-bar-plot'),
-    ])
+    ]),
+
+    html.Div([
+        dcc.Dropdown(
+                id='state-dropdown',
+                options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique()],
+        ),
+        dcc.Graph(id='line-chart')
+    ]),
 ])    
 
 
@@ -250,7 +266,40 @@ def gender_bar_plot(selected_year):
     )
     return fig
 
+@app.callback(
+    Output('line-chart', 'figure'),
+    Input('state-dropdown', 'value')
+)
 
+def update_line_chart(selected_state):
+    # Create a scatter trace
+    mortality_AL = df[(df['QuestionID'] == 'DIA03') & 
+                            (df['StratificationCategoryID1'] == 'OVERALL') &
+                            (df['DataValueTypeID'] == 'CRDRATE') &
+                            (df['LocationAbbr'] == selected_state) 
+                            ][['Year', 'DataValue']]
+    trace = go.Scatter(
+        x=mortality_AL['Year'],
+        y=mortality_AL['DataValue'],
+        mode='lines+markers',
+        name='Mortality Rate for AL'
+    )
+    
+    # Create the figure
+    fig = go.Figure(data=[trace])
+
+    # Update layout
+    fig.update_layout(
+        title=f'Mortality Rate for {selected_state} (2019-2021)',
+        xaxis_title='Year',
+        yaxis_title='DataValue',
+        xaxis=dict(
+            tickmode='array',
+            tickvals=mortality_AL['Year'].unique()
+        )    
+    )
+    
+    return fig
 
 # # Callback for updating the correlation heatmap
 # @app.callback(
