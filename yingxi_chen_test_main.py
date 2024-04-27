@@ -8,7 +8,7 @@ from dash import dash_table
 import numpy as np
 
 # Load the DataFrame
-df = pd.read_csv(r"diabetes_data.csv")
+df = pd.read_csv("diabetes_data.csv")
 df = df.drop(columns = ['Unnamed: 0.1', 'TopicID'])
 
 # Initialize the Dash app
@@ -23,7 +23,10 @@ state_count.columns = ['LocationAbbr', 'Count']
 min_year = int(df['Year'].min())
 max_year = int(df['Year'].max())
 # df['Year'] = pd.to_datetime(df['Year'], format='%Y')
+locations = df['LocationAbbr'].unique()
 
+dia01_counts_df = dia01_counts_df = df.groupby('LocationAbbr')['QuestionID'].value_counts().reset_index()
+ts_df = dia01_counts_df[dia01_counts_df['QuestionID'] == 'DIA01']
 
 # Add a dropdown to select a categorical column for grouping in the box plot
 group_dropdown = dcc.Dropdown(
@@ -31,6 +34,8 @@ group_dropdown = dcc.Dropdown(
     options=[{'label': col, 'value': col} for col in categorical_columns],
     value=categorical_columns[0] if len(categorical_columns) > 0 else None
 )
+
+
 
 # Setup the layout of the Dash app
 app.layout = html.Div([
@@ -55,7 +60,32 @@ app.layout = html.Div([
             dcc.Graph(id='bar-chart')
         ], style={'width': '50%', 'display': 'inline-block'}),
         
-        # Box plot dropdowns and chart
+
+
+        # Historgram of distribution of continuous variables
+        html.Div([
+            html.H3("Historgram"),
+            dcc.Dropdown(
+                id='quantitative-variable-dropdown',
+                options=[{'label': i, 'value': i} for i in quantitative_columns],
+                value=quantitative_columns[0]  # Default value is the first quantitative column
+            ),
+            dcc.Graph(id='histogram-plot')
+        ], style={'width': '50%', 'display': 'inline-block'}),
+
+    ]),
+
+
+    html.Div([
+    # Container Div for both plots
+        html.Div([
+            # DIA01 Response by State Plot and Dropdown
+            html.Div([
+            html.H3('DIA01 Counts by State'),
+            dcc.Graph(id='dia01-count-plot'),
+        ], style={'width': '50%', 'display': 'inline-block'}),
+
+        # Box Plot Section
         html.Div([
             html.H3("Box Plot"),
             dcc.Dropdown(
@@ -66,7 +96,34 @@ app.layout = html.Div([
             group_dropdown, 
             dcc.Graph(id='boxplot-chart')
         ], style={'width': '50%', 'display': 'inline-block'})
+    ])
+]),
+
+
+    html.Div([
+        html.Div([
+            html.H3("Diabetes Data Pair Plot"),
+            dcc.Graph(
+                id='pair-plot',
+                figure=px.scatter_matrix(
+                    df,
+                    dimensions=quantitative_columns,
+                    title="Pair plot of quantitative variables"
+                )
+            )
+        ])
     ]),
+
+
+
+
+
+
+
+
+
+
+
 
     html.Div([
         html.H3("US Heatmap", style={'textAlign': 'center'}),
@@ -131,6 +188,8 @@ app.layout = html.Div([
         dcc.Dropdown(
                 id='state-dropdown',
                 options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique()],
+                value=locations[0], 
+                clearable=False
         ),
         dcc.Graph(id='line-chart')
     ]),
@@ -170,6 +229,25 @@ def update_boxplot(selected_quantitative, selected_group):
         return fig
     return {}
 
+#callback to update the bar plot of states in x axis
+@app.callback(
+    Output('dia01-count-plot', 'figure'),
+    [Input('dia01-count-plot', 'id')]  # This is just a placeholder; in practice, you might have inputs that trigger this callback
+)
+def update_dia01_count_plot(_):
+    fig = px.bar(ts_df, x='LocationAbbr', y='count', title='DIA01 Counts by State')
+    return fig
+
+# Callback for updating the histogram
+@app.callback(
+    Output('histogram-plot', 'figure'),
+    Input('quantitative-variable-dropdown', 'value')
+)
+def update_histogram(selected_variable):
+    # Create the histogram using Plotly Express
+    fig = px.histogram(df, x=selected_variable, nbins=30, title=f'Distribution of {selected_variable}')
+    return fig
+
 
 # Callback for updating the us-heatmap for counts
 @app.callback(
@@ -186,6 +264,11 @@ def update_us_heatmap(_):
         title="Value Counts by State"
     )
     return fig
+
+
+
+
+
 
 
 # Callback for us-heatmap for DIA01
@@ -216,6 +299,7 @@ def update_us_heatmap(selected_year):
     Output('us-heatmap-DIA02', 'figure'),
     [Input('year-slider-2', 'value')]
 )
+
 def update_us_heatmap(selected_year):
     filtered_df = df[(df['QuestionID'] == 'DIA02') &
                      (df['StratificationCategoryID1'] == 'OVERALL') &
@@ -294,6 +378,38 @@ def gender_bar_plot(selected_year):
     )
     return fig
 
+
+@app.callback(
+    Output('pair-plot', 'figure'),
+    [Input('pairplot-variables', 'value')]
+)
+def update_pair_plot(selected_variables):
+    # Create the SPLOM figure
+    fig = px.scatter_matrix(df, dimensions=selected_variables)
+
+    # Update layout for better readability
+    fig.update_layout(
+        height=1200,  # Increase figure height
+        width=1200,   # Increase figure width
+        margin=dict(l=50, r=50, b=50, t=50),  # Adjust margins
+    )
+    
+    # Update axes properties
+    for axis in fig.layout:
+        if 'axis' in axis:
+            fig.layout[axis].tickfont.size = 12  # Increase font size for ticks
+            fig.layout[axis].title.font.size = 14  # Increase font size for axis titles
+    
+    # Rotate y-axis labels if needed
+    fig.update_yaxes(tickangle=45)
+    
+    # Adjust marker size if needed
+    fig.update_traces(marker=dict(size=5))
+
+    return fig
+
+
+# line chart
 @app.callback(
     Output('line-chart', 'figure'),
     Input('state-dropdown', 'value')
@@ -313,6 +429,7 @@ def update_line_chart(selected_state):
         name='Mortality Rate for AL'
     )
     
+
     # Create the figure
     fig = go.Figure(data=[trace])
 
@@ -329,19 +446,6 @@ def update_line_chart(selected_state):
     
     return fig
 
-# # Callback for updating the correlation heatmap
-# @app.callback(
-#     Output('correlation-heatmap', 'figure'),
-#     Input('table', 'data')
-# )
-# def update_heatmap(_):
-#     corr = df[quantitative_columns].corr()
-#     fig = px.imshow(corr, text_auto=True,
-#                     labels=dict(x="Variables", y="Variables", color="Correlation"),
-#                     x=quantitative_columns,
-#                     y=quantitative_columns,
-#                     title="Correlation Heatmap")
-#     return fig
 
 
 if __name__ == '__main__':
