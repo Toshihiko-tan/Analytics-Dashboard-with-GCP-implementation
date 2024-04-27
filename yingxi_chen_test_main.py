@@ -7,8 +7,7 @@ from dash import dash_table
 import numpy as np
 
 # Load the DataFrame
-# df = pd.read_csv(r"C:\Users\22840\Desktop\Analytics-Dashboard-with-GCP-implementation\cleaned_data.csv")
-df = pd.read_csv(r"C:\Users\22840\Desktop\dataset\cancer.csv")
+df = pd.read_csv(r"C:\Users\22840\Desktop\Analytics-Dashboard-with-GCP-implementation\cleaned_data.csv")
 
 
 # Initialize the Dash app
@@ -18,8 +17,8 @@ app = dash.Dash(__name__)
 categorical_columns = df.select_dtypes(include=['object']).columns
 quantitative_columns = df.select_dtypes(include=['float64', 'int64']).columns
 
-
-
+state_count = df['LocationAbbr'].value_counts().reset_index()
+state_count.columns = ['LocationAbbr', 'Count']
 
 # Setup the layout of the Dash app
 app.layout = html.Div([
@@ -50,23 +49,7 @@ app.layout = html.Div([
         ], style={'width': '50%', 'display': 'inline-block'})
     ]),
     html.Div([
-        html.Div([
-            dcc.Dropdown(
-                id='x-axis-dropdown',
-                options=[{'label': col, 'value': col} for col in quantitative_columns],
-                value=quantitative_columns[0] if len(quantitative_columns) > 0 else None
-            ),
-            dcc.Dropdown(
-                id='y-axis-dropdown',
-                options=[{'label': col, 'value': col} for col in quantitative_columns],
-                value=quantitative_columns[1] if len(quantitative_columns) > 1 else quantitative_columns[0]
-            ),
-            dcc.Graph(id='regression-plot')
-        ], style={'width': '50%', 'display': 'inline-block'}),
-
-        html.Div([
-            dcc.Graph(id='correlation-heatmap')
-        ], style={'width': '50%', 'display': 'inline-block'})
+        dcc.Graph(id='us-heatmap')
     ])
 ])
 
@@ -93,31 +76,20 @@ def update_boxplot(selected_column):
         return fig
     return {}
 
-# Callback for updating the regression plot
 @app.callback(
-    Output('regression-plot', 'figure'),
-    [Input('x-axis-dropdown', 'value'), Input('y-axis-dropdown', 'value')]
-)
-def update_regression_plot(x_col, y_col):
-    if x_col and y_col:
-        fig = px.scatter(df, x=x_col, y=y_col, trendline="ols", title=f"Regression between {x_col} and {y_col}")
-        return fig
-    return {}
-
-# Callback for updating the correlation heatmap
-@app.callback(
-    Output('correlation-heatmap', 'figure'),
+    Output('us-heatmap', 'figure'),
     Input('table', 'data')
 )
-def update_heatmap(_):
-    corr = df[quantitative_columns].corr()
-    fig = px.imshow(corr, text_auto=True,
-                    labels=dict(x="Variables", y="Variables", color="Correlation"),
-                    x=quantitative_columns,
-                    y=quantitative_columns,
-                    title="Correlation Heatmap")
+def update_us_heatmap(_):
+    fig = px.choropleth(
+        state_count, 
+        locations='LocationAbbr', 
+        locationmode="USA-states", 
+        color='Count',  # This should be the column from your DataFrame that holds the counts
+        scope="usa",
+        title="Counts by State"
+    )
     return fig
-
 
 
 if __name__ == '__main__':
