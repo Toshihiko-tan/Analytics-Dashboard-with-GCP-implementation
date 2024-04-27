@@ -167,8 +167,16 @@ app.layout = html.Div([
         dcc.Graph(id='correlation-heatmap'),
         html.P("The result is actually not quite what we were expecting. There doesn't seem to be high correlation between the predicting variables, so multicollinearity might not be as big a problem as we thought. The only pair we might need to keep an eye on are DIA03 and DIA04, further diagnosis might be needed in model selection process.")
     ]),
+
     ################################## TODO place more graphs
+
     html.H1("Predictive Analysis Using ML Models", style={'textAlign': 'center'}),
+    html.H2("Model Selection", style={'textAlign': 'center'}),
+    html.Div([
+        dcc.Graph(id='MSE'),
+        dcc.Graph(id='R-squared'),
+    ]),
+
     html.H2("Linear Regression Model", style={'textAlign': 'center'}),
     html.Div([
         html.Div([
@@ -430,6 +438,53 @@ def update_correlation_heatmap(selected_year):
         width=500   # Adjust the width to your preference
     )
 
+    return fig
+
+# Callback for MSE and R-squared Graph
+@app.callback(
+    Output('MSE', 'figure'),
+    [Input('table', 'data')]
+)
+def update_mse_graph(_):
+    mse_scores = {
+    'Linear Regression': 0.5154938,
+    'Random Forest': 3.237268,
+    'Ridge': 1.167645,
+    'Lasso': 4.613817,
+    'SVR': 4.90765,
+    'Decision Tree': 7.4525
+    }
+    fig = go.Figure([go.Bar(x=list(mse_scores.keys()), y=list(mse_scores.values()), marker_color='lightblue')])
+
+    fig.update_layout(
+        title='Comparison of MSE Across Different Regression Models',
+        xaxis_title='Model Type',
+        yaxis_title='MSE',
+        template='plotly_white'  # Change template as needed
+    )
+    return fig
+
+@app.callback(
+    Output('R-squared', 'figure'),
+    [Input('table', 'data')]
+)
+def update_r_squared_graph(_):
+    r2_scores = {
+    'Linear Regression': 0.983583,
+    'Random Forest': 0.922726,
+    'Ridge': 0.9148073,
+    'Lasso': 0.2311491,
+    'SVR': 0.003719412,
+    'Decision Tree': 1
+    }
+    fig = go.Figure([go.Bar(x=list(r2_scores.keys()), y=list(r2_scores.values()), marker_color='pink')])
+
+    fig.update_layout(
+        title='Comparison of R^2 Scores Across Different Regression Models',
+        xaxis_title='Model Type',
+        yaxis_title='R^2 Score',
+        template='plotly_white'  # Change template as needed
+    )
     return fig
 
 
