@@ -22,7 +22,6 @@ state_count = df['LocationAbbr'].value_counts().reset_index()
 state_count.columns = ['LocationAbbr', 'Count']
 min_year = int(df['Year'].min())
 max_year = int(df['Year'].max())
-# df['Year'] = pd.to_datetime(df['Year'], format='%Y')
 locations = df['LocationAbbr'].unique()
 
 dia01_counts_df = dia01_counts_df = df.groupby('LocationAbbr')['QuestionID'].value_counts().reset_index()
@@ -75,6 +74,15 @@ app.layout = html.Div([
 
     ]),
 
+
+
+    # Add the HTML setup for the bar charts
+    html.Div([
+        html.Div([dcc.Graph(id='bar-chart-dia01')], style={'width': '25%', 'display': 'inline-block'}),
+        html.Div([dcc.Graph(id='bar-chart-dia02')], style={'width': '25%', 'display': 'inline-block'}),
+        html.Div([dcc.Graph(id='bar-chart-dia03')], style={'width': '25%', 'display': 'inline-block'}),
+        html.Div([dcc.Graph(id='bar-chart-dia04')], style={'width': '25%', 'display': 'inline-block'}),
+    ]),
 
     html.Div([
     # Container Div for both plots
@@ -429,11 +437,8 @@ def update_line_chart(selected_state):
         name='Mortality Rate for AL'
     )
     
-
-    # Create the figure
     fig = go.Figure(data=[trace])
 
-    # Update layout
     fig.update_layout(
         title=f'Mortality Rate for {selected_state} (2019-2021)',
         xaxis_title='Year',
@@ -447,6 +452,34 @@ def update_line_chart(selected_state):
     return fig
 
 
+
+
+
+def create_bar_chart_for_dia(dia_number):
+    # Filter the DataFrame for the specified DIA number
+    filtered_df = df[df['QuestionID'] == dia_number]
+    # Aggregate by state
+    aggregated_data = filtered_df.groupby('LocationAbbr').size().reset_index(name='Count')
+    # Create the bar chart
+    fig = px.bar(aggregated_data, x='LocationAbbr', y='Count', title=f'Counts for {dia_number}')
+    return fig
+
+# Callbacks for updating each bar chart
+@app.callback(Output('bar-chart-dia01', 'figure'), [Input('categorical-dropdown', 'value')])
+def update_bar_chart_dia01(_):
+    return create_bar_chart_for_dia('DIA01')
+
+@app.callback(Output('bar-chart-dia02', 'figure'), [Input('categorical-dropdown', 'value')])
+def update_bar_chart_dia02(_):
+    return create_bar_chart_for_dia('DIA02')
+
+@app.callback(Output('bar-chart-dia03', 'figure'), [Input('categorical-dropdown', 'value')])
+def update_bar_chart_dia03(_):
+    return create_bar_chart_for_dia('DIA03')
+
+@app.callback(Output('bar-chart-dia04', 'figure'), [Input('categorical-dropdown', 'value')])
+def update_bar_chart_dia04(_):
+    return create_bar_chart_for_dia('DIA04')
 
 if __name__ == '__main__':
     app.run_server(debug=True)
