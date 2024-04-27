@@ -40,7 +40,7 @@ group_dropdown = dcc.Dropdown(
 
 # Setup the layout of the Dash app
 app.layout = html.Div([
-    html.H1("Exploratory Data Analysis for U.S. Chronic Disease Data"),
+    html.H1("Exploratory Data Analysis for U.S. Chronic Disease Data", style={'textAlign': 'center'}),
     dash_table.DataTable(
         id='table',
         columns=[{"name": i, "id": i} for i in df.columns],
@@ -137,19 +137,42 @@ app.layout = html.Div([
         dcc.Graph(id='correlation-heatmap')
     ]),
     ################################## place more graphs
-    html.H1("Predictive Analysis Using ML Models"),
-    html.H2("Linear Regression Model"),
+    html.H1("Predictive Analysis Using ML Models", style={'textAlign': 'center'}),
+    html.H2("Linear Regression Model", style={'textAlign': 'center'}),
     html.Div([
-        dcc.Dropdown(
-                id='state-dropdown-linear',
-                options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique()],
-        ),
-        dcc.Input(id='year-linear', type='number', placeholder='Enter Year'),
-        dcc.Input(id='dia02-linear', type='number', placeholder='Enter DIA02'),
-        dcc.Input(id='dia03-linear', type='number', placeholder='Enter DIA03'),
-        dcc.Input(id='dia04-linear', type='number', placeholder='Enter DIA04'),
-        html.Button('Predict!!', id='predict-button-linear', n_clicks=0),
-        html.Div(id='prediction-output-linear')
+        html.Div([
+            html.Div([
+                html.Label('State:', style={'margin-right': '10px'}),
+                dcc.Dropdown(
+                    id='state-dropdown-linear',
+                    options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique()],
+                    style={'width': '300px'}  # Adjust the width as needed
+                )
+            ], style={'display': 'flex', 'alignItems': 'center', 'margin-bottom': '10px'}),
+
+            html.Div([
+                html.Label('Year:', style={'margin-right': '10px'}),
+                dcc.Input(id='year-linear', type='number', placeholder='Enter Year')
+            ], style={'display': 'flex', 'alignItems': 'center', 'margin-bottom': '10px'}),
+
+            html.Div([
+                html.Label('DIA02:', style={'margin-right': '10px'}),
+                dcc.Input(id='dia02-linear', type='number', placeholder='Enter DIA02')
+            ], style={'display': 'flex', 'alignItems': 'center', 'margin-bottom': '10px'}),
+            html.Div([
+                html.Label('DIA03:', style={'margin-right': '10px'}),
+                dcc.Input(id='dia03-linear', type='number', placeholder='Enter DIA03')
+            ], style={'display': 'flex', 'alignItems': 'center', 'margin-bottom': '10px'}),
+
+            html.Div([
+                html.Label('DIA04:', style={'margin-right': '10px'}),
+                dcc.Input(id='dia04-linear', type='number', placeholder='Enter DIA04')
+            ], style={'display': 'flex', 'alignItems': 'center', 'margin-bottom': '10px'}),
+
+            html.Button('Predict!!', id='predict-button-linear', n_clicks=0),
+        ], style={'display': 'flex', 'flexDirection': 'column', 'width': '50%', 'marginLeft': 'auto', 'marginRight': 'auto'}),
+    
+    html.Div(id='prediction-output-linear', style={'textAlign': 'center'})
     ]),
 
 ])    
