@@ -9,7 +9,7 @@ import numpy as np
 
 # Load the DataFrame
 df = pd.read_csv(r"diabetes_data.csv")
-cleaned_df = pd.read_csv(r"cleaned_data.csv")
+df = df.drop(columns = ['Unnamed: 0.1', 'TopicID'])
 
 
 # Initialize the Dash app
@@ -26,6 +26,12 @@ max_year = int(df['Year'].max())
 # df['Year'] = pd.to_datetime(df['Year'], format='%Y')
 
 
+# Add a dropdown to select a categorical column for grouping in the box plot
+group_dropdown = dcc.Dropdown(
+    id='group-dropdown',
+    options=[{'label': col, 'value': col} for col in categorical_columns],
+    value=categorical_columns[0] if len(categorical_columns) > 0 else None
+)
 
 # Setup the layout of the Dash app
 app.layout = html.Div([
@@ -36,7 +42,9 @@ app.layout = html.Div([
         data=df.to_dict('records'),
         style_table={'height': '300px', 'overflowY': 'auto'}
     ),
+
     html.Div([
+        # Bar chart dropdowns and chart
         html.Div([
             dcc.Dropdown(
                 id='categorical-dropdown',
@@ -45,13 +53,15 @@ app.layout = html.Div([
             ),
             dcc.Graph(id='bar-chart')
         ], style={'width': '50%', 'display': 'inline-block'}),
-
+        
+        # Box plot dropdowns and chart
         html.Div([
             dcc.Dropdown(
                 id='quantitative-dropdown',
                 options=[{'label': col, 'value': col} for col in quantitative_columns],
                 value=quantitative_columns[0] if len(quantitative_columns) > 0 else None
             ),
+            group_dropdown,  # New dropdown for selecting a group for the box plot
             dcc.Graph(id='boxplot-chart')
         ], style={'width': '50%', 'display': 'inline-block'})
     ]),
@@ -127,18 +137,25 @@ app.layout = html.Div([
 )
 def update_bar_chart(selected_column):
     if selected_column:
-        fig = px.bar(df, x=selected_column, title=f"Counts of {selected_column}", color_discrete_sequence=['#636EFA'])
+        fig = px.bar(
+            df[selected_column].value_counts().reset_index(),
+            x='index',
+            y=selected_column,
+            title=f"Counts of {selected_column}"
+        )
         return fig
     return {}
 
 # Callback for updating the boxplot
 @app.callback(
     Output('boxplot-chart', 'figure'),
-    Input('quantitative-dropdown', 'value')
+    [Input('quantitative-dropdown', 'value'),
+     Input('group-dropdown', 'value')]  # Take input from the new group dropdown as well
 )
-def update_boxplot(selected_column):
-    if selected_column:
-        fig = px.box(df, y=selected_column, title=f"Distribution of {selected_column}", notched=True, color_discrete_sequence=['#636EFA'])
+def update_boxplot(selected_quantitative, selected_group):
+    if selected_quantitative and selected_group:
+        fig = px.box(df, y=selected_quantitative, x=selected_group, 
+                     title=f"Distribution of {selected_quantitative} by {selected_group}", notched=True)
         return fig
     return {}
 
