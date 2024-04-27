@@ -6,6 +6,7 @@ import plotly.graph_objs as go
 import pandas as pd
 from dash import dash_table
 import numpy as np
+import pickle
 
 # Load the DataFrame
 df = pd.read_csv(r"diabetes_data.csv")
@@ -83,7 +84,7 @@ app.layout = html.Div([
                 step=1
             ),
             dcc.Graph(id='us-heatmap-DIA01')
-        ], style={'width': '50%', 'display': 'inline-block'}),
+        ]),
 
         html.Div([
             dcc.Slider(
@@ -95,7 +96,7 @@ app.layout = html.Div([
                 step=1
             ),
             dcc.Graph(id='us-heatmap-DIA02')
-        ], style={'width': '50%', 'display': 'inline-block'})
+        ])
     ]),
     
     html.Div([
@@ -282,7 +283,7 @@ def gender_bar_plot(selected_year):
         pivot_gender_data.reset_index(),
         x='LocationAbbr',
         y=['SEXF', 'SEXM'],
-        title=f"Comparison of Male vs. Female Ketoacidosis Diabetes Mortality Rates by State in {selected_year}",
+        title=f"Comparison of Sex Ketoacidosis Diabetes Mortality Rates by State in {selected_year}",
         labels={'value': 'Mortality Rate per 100,000', 'variable': 'Gender'},
         barmode='group',
         color_discrete_map={'SEXF': 'pink', 'SEXM': 'lightblue'}
@@ -370,7 +371,7 @@ def update_correlation_heatmap(selected_year):
 
     # Update layout
     fig.update_layout(
-        title='Correlation Heatmap',
+        title='Correlation Heatmap between questions',
         xaxis=dict(title='Variables',
                    tickmode='array',
                    tickvals=[0,1,2,3],
