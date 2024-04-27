@@ -41,6 +41,7 @@ group_dropdown = dcc.Dropdown(
 # Setup the layout of the Dash app
 app.layout = html.Div([
     html.H1("Exploratory Data Analysis for U.S. Chronic Disease Data", style={'textAlign': 'center'}),
+    html.P("Our goal is to predict the percentage of diabetes patients among adults using different predictors."),
     dash_table.DataTable(
         id='table',
         columns=[{"name": i, "id": i} for i in df.columns],
@@ -70,11 +71,18 @@ app.layout = html.Div([
             dcc.Graph(id='boxplot-chart')
         ], style={'width': '50%', 'display': 'inline-block'})
     ]),
-
+    html.P("First, we want to examine the number of data points we have for each state. Our assumption is that the number of data points differ by states, where states with higher population, like New York, California, and Texas have more data points than others."),
+    html.P("We have created a heatmap to visualize the data points we have, with colors that are more yellow have more data points than others."),
     html.Div([
         dcc.Graph(id='us-heatmap')
     ]),
+    html.P("Indeed, we can see from the heatmap that states with higher population, New York, Washington, California, and Texas have the most data points. Wyoming, South Dakota, North Dakota, Idaho, and Montana are agriculture states with less population, and hence have less data points than other states."),
+    
+    html.Div(style={'marginBottom': '50px'}),
 
+    html.P("Then, we want to visualize our response variable, DIA01, or precentage of diabete patients among adults. Our assumption is that the percentage of diabetes among adults varies by states, but not by time."),
+    html.P("Again, we have created a heatmap with sliders to select the data year we have. For our response variable, we have four years of data, from 2019 to 2022."),
+    
     html.Div([
         html.Div([
             dcc.Slider(
@@ -87,7 +95,12 @@ app.layout = html.Div([
             ),
             dcc.Graph(id='us-heatmap-DIA01')
         ]),
+        html.P("Immediately, we discovered that 2020 and 2021 have the exact same data. After using the original dataset to verify that this is indeed the case, we believe that this is due to government cannot collect data from people during the covid-19 pandemic, so the data was used for the consecutive two years. Other than that, we can see that there does to seem some effect of year on the percentage of diabetes patients among adults. Specifically, the year 2022 has generally lower diabete rates across all states than previous years."),
+        html.P("Also, we can see that there seems to be some significance relationship between state and percentage of diabete patients among adults. Specifically, southern states seem to have higher percentage of diabetes patients among adults than any other regions, but West Virginia has the highest percentage of diabetes patients among adults than any other states."),
+        
+        html.Div(style={'marginBottom': '50px'}),
 
+        html.P("We have also visualized the percentage of Gestational diabetes among women with a recent live birth using a heatmap. Our assumption is that, again, this would differ much by states, and would have similar distribution to our response variable."),
         html.Div([
             dcc.Slider(
                 id='year-slider-2',
@@ -98,10 +111,15 @@ app.layout = html.Div([
                 step=1
             ),
             dcc.Graph(id='us-heatmap-DIA02')
-        ])
+        ]),
+        html.P("From the heatmap, we can immediately see that there are many missing values for multiple states. Specifically, California, Texas, and Nevada are missing all three years of data from 2019 to 2021. These are some of the most populated states in Amercica, so we should definitely take that into consideration."),
+        html.P("We can see that the distribution of this variable, in fact, is quite different from our reponse variable, percentage of diabetes patients in adults. States like New York, South Dakota, Washington, and Oregon, which don't have very high percentage of diabetes patients in adults, have much higher percentage of Gestational diabetes among women with a recent live birth. This is quite different from our assumption, and it requires further inspection when we fit the machine learning model."),
     ]),
     
+    html.Div(style={'marginBottom': '50px'}),
+    
     html.Div([
+        html.P("Then, we visualized another predictor variable, Diabetes Ketoacidosis Mortality Rate (per 100,000). We plot a pivottable by state and race. Our assumption is that Diabetes Ketoacidosis Mortality Rate will differ more by states and not much by race."),
         dcc.Slider(
             id='year-slider-3',
             min=min_year,
@@ -111,9 +129,13 @@ app.layout = html.Div([
             step=1
         ),
         dcc.Graph(id='pivot_table'),
+        html.P("Again, we can immediately see that the data is missing for most races except white and black. There is, however, valid data for all of the states. Therefore, we have to consider how representative this data is of the diverse ethnicities in America. We can immediately see that native Americans of Oklahoma, a state where native Americans reside traditionally, have the highest Diabetes Ketoacidosis Mortality Rate (per 100,000) across the years where the data is available. While other states generally have similar mortality rates, Kentucky and Nevada are two states that constantly have higher Diabetes Ketoacidosis Mortality Rate for both white and black demographics."),
     ]),
 
+    html.Div(style={'marginBottom': '50px'}),
+
     html.Div([
+        html.P("We have also plot the Diabetes Ketoacidosis Mortality Rate (per 100,000) against sex by state. Our assumption is that the Diabetes Ketoacidosis Mortality Rate is affected by sex."),
         dcc.Slider(
             id='year-slider-4',
             min=min_year,
@@ -123,20 +145,29 @@ app.layout = html.Div([
             step=1
         ),
         dcc.Graph(id='gender-bar-plot'),
+        html.P("Indeed, our assumption is true, and we can see that the Diabetes Ketoacidosis Mortality Rate for male is higher in almost all the states across every year which data is available. In fact, in states like New Mexico, Nevada, and Oklohama, the Diabetes Ketoacidosis Mortality Rate for male is much higher than that of female's mortality rate."),
     ]),
 
+    html.Div(style={'marginBottom': '50px'}),
+
     html.Div([
+        html.P("We have also plotted the predictor variable Mortality Rate of diabetes with a line plot with data from 2019 to 2021. Our assumption is that it does change with time."),
         dcc.Dropdown(
                 id='state-dropdown',
                 options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique()],
         ),
-        dcc.Graph(id='line-chart')
+        dcc.Graph(id='line-chart'),
+        html.P("After examining the line plot or all the states, we can see that for most of the states, the Mortality Rate of diabetes do increase with time from 2019 to 2021, as the mortality rate of 2021 is generally higher than the mortality rate of 2019. There are, however, some states, like New York, that have a decreasing diabetes mortality rate from 2020 to 2021."),
     ]),
 
+    html.Div(style={'marginBottom': '50px'}),
+
     html.Div([
-        dcc.Graph(id='correlation-heatmap')
+        html.P("Lastly, we plot the correlation heatmap of our predictor and response variable. Our assumption is that there are some correlation between the predictor variables, due to the nature of the predictor variables."),
+        dcc.Graph(id='correlation-heatmap'),
+        html.P("The result is actually not quite what we were expecting. There doesn't seem to be high correlation between the predicting variables, so multicollinearity might not be as big a problem as we thought. The only pair we might need to keep an eye on are DIA03 and DIA04, further diagnosis might be needed in model selection process.")
     ]),
-    ################################## place more graphs
+    ################################## TODO place more graphs
     html.H1("Predictive Analysis Using ML Models", style={'textAlign': 'center'}),
     html.H2("Linear Regression Model", style={'textAlign': 'center'}),
     html.Div([
