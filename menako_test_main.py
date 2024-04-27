@@ -1,11 +1,14 @@
 import dash
 from dash import dcc, html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import plotly.express as px
 import plotly.graph_objs as go
 import pandas as pd
 from dash import dash_table
 import numpy as np
+import pickle
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
 
 # Load the DataFrame
 df = pd.read_csv(r"diabetes_data.csv")
@@ -37,7 +40,7 @@ group_dropdown = dcc.Dropdown(
 
 # Setup the layout of the Dash app
 app.layout = html.Div([
-    html.H1("Dataframe Overview"),
+    html.H1("Exploratory Data Analysis for U.S. Chronic Disease Data"),
     dash_table.DataTable(
         id='table',
         columns=[{"name": i, "id": i} for i in df.columns],
@@ -83,7 +86,7 @@ app.layout = html.Div([
                 step=1
             ),
             dcc.Graph(id='us-heatmap-DIA01')
-        ], style={'width': '50%', 'display': 'inline-block'}),
+        ]),
 
         html.Div([
             dcc.Slider(
@@ -95,7 +98,7 @@ app.layout = html.Div([
                 step=1
             ),
             dcc.Graph(id='us-heatmap-DIA02')
-        ], style={'width': '50%', 'display': 'inline-block'})
+        ])
     ]),
     
     html.Div([
@@ -132,7 +135,23 @@ app.layout = html.Div([
 
     html.Div([
         dcc.Graph(id='correlation-heatmap')
-    ])
+    ]),
+    ################################## place more graphs
+    html.H1("Predictive Analysis Using ML Models"),
+    html.H2("Linear Regression Model"),
+    html.Div([
+        dcc.Dropdown(
+                id='state-dropdown-linear',
+                options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique()],
+        ),
+        dcc.Input(id='year-linear', type='number', placeholder='Enter Year'),
+        dcc.Input(id='dia02-linear', type='number', placeholder='Enter DIA02'),
+        dcc.Input(id='dia03-linear', type='number', placeholder='Enter DIA03'),
+        dcc.Input(id='dia04-linear', type='number', placeholder='Enter DIA04'),
+        html.Button('Predict!!', id='predict-button-linear', n_clicks=0),
+        html.Div(id='prediction-output-linear')
+    ]),
+
 ])    
 
 
@@ -282,7 +301,7 @@ def gender_bar_plot(selected_year):
         pivot_gender_data.reset_index(),
         x='LocationAbbr',
         y=['SEXF', 'SEXM'],
-        title=f"Comparison of Male vs. Female Ketoacidosis Diabetes Mortality Rates by State in {selected_year}",
+        title=f"Comparison of Sex Ketoacidosis Diabetes Mortality Rates by State in {selected_year}",
         labels={'value': 'Mortality Rate per 100,000', 'variable': 'Gender'},
         barmode='group',
         color_discrete_map={'SEXF': 'pink', 'SEXM': 'lightblue'}
@@ -330,33 +349,7 @@ def update_line_chart(selected_state):
     [Input('table', 'data')]
 )
 def update_correlation_heatmap(selected_year):
-    dia01 = cleaned_data[(cleaned_data['QuestionID'] == 'DIA01') 
-                     & (cleaned_data['StratificationCategoryID1'] == 'OVERALL') 
-                     & (cleaned_data['DataValueTypeID'] == 'CRDPREV') 
-                    #  & (cleaned_data['LocationAbbr'] == 'AL')
-                     & (cleaned_data['YearStart'] == 2019)
-                     ][['LocationAbbr', 'DataValue']]
-    dia02 = cleaned_data[(cleaned_data['QuestionID'] == 'DIA02') 
-                         & (cleaned_data['StratificationCategoryID1'] == 'OVERALL') 
-                         & (cleaned_data['DataValueTypeID'] == 'CRDPREV') 
-                        #  & (cleaned_data['LocationAbbr'] == 'AL')
-                         & (cleaned_data['YearStart'] == 2019)
-                         ][['LocationAbbr', 'DataValue']]
-    dia03 = cleaned_data[(cleaned_data['QuestionID'] == 'DIA03')
-                         & (cleaned_data['StratificationCategoryID1'] == 'OVERALL')
-                         & (cleaned_data['DataValueTypeID'] == 'CRDRATE') 
-                        #  & (cleaned_data['LocationAbbr'] == 'AL')
-                         & (cleaned_data['YearStart'] == 2019) 
-                         ][['LocationAbbr', 'DataValue']]
-    dia04 = cleaned_data[(cleaned_data['QuestionID'] == 'DIA04')
-                         & (cleaned_data['StratificationCategoryID1'] == 'OVERALL')
-                         & (cleaned_data['DataValueTypeID'] == 'CRDRATE') 
-                        #  & (cleaned_data['LocationAbbr'] == 'AL')
-                         & (cleaned_data['YearStart'] == 2019) 
-                         ][['LocationAbbr', 'DataValue']]
-    final_df = pd.merge(dia01, dia02, on='LocationAbbr', suffixes=('_dia01', '_dia02'))
-    final_df = pd.merge(final_df, dia03, on='LocationAbbr')
-    final_df = pd.merge(final_df, dia04, on='LocationAbbr', suffixes=('_dia03', '_dia04'))
+    final_df = pd.read_csv(r"final_df.csv")
 
     correlation_matrix = final_df[['DataValue_dia01', 'DataValue_dia02', 'DataValue_dia03', 'DataValue_dia04']].corr()
 
@@ -370,7 +363,7 @@ def update_correlation_heatmap(selected_year):
 
     # Update layout
     fig.update_layout(
-        title='Correlation Heatmap',
+        title='Correlation Heatmap between questions',
         xaxis=dict(title='Variables',
                    tickmode='array',
                    tickvals=[0,1,2,3],
@@ -384,6 +377,42 @@ def update_correlation_heatmap(selected_year):
     )
 
     return fig
+
+
+# Callback for the prediction using linear model
+@app.callback(
+    Output('prediction-output-linear', 'children'),
+    [Input('predict-button-linear', 'n_clicks')],
+    [State('state-dropdown-linear', 'value'),
+     State('year-linear', 'value'),
+     State('dia02-linear', 'value'),
+     State('dia03-linear', 'value'),
+     State('dia04-linear', 'value')]
+)
+def predict(n_clicks, location, year, dia02, dia03, dia04):
+    with open('linear_model.pkl', 'rb') as file:
+        model = pickle.load(file)
+    if n_clicks > 0:
+        # Create an input DataFrame or array depending on your model's expected input
+        input_features = [location, year, dia02, dia03, dia04]
+        
+        # Assuming the model expects a DataFrame with specific column names
+        test_data = pd.DataFrame([input_features], 
+                    columns=['LocationAbbr','YearStart', 'DataValue_dia02', 'DataValue_dia03', 'DataValue_dia04'])
+        
+        columns_to_encode = ['LocationAbbr']
+
+        # Perform one-hot encoding
+        ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), columns_to_encode)], remainder='passthrough')
+        merged_df = pd.read_csv("merged_df.csv")
+        x_train = merged_df.drop(['DataValue_dia01'], axis=1)
+        x_train_encoded = ct.fit_transform(x_train)
+        test_data_encoded = ct.transform(test_data)
+        # Make prediction
+        prediction = model.predict(test_data_encoded)
+        return f'Predicted Outcome: {prediction[0]}'
+
+    return 'Enter values and press predict.'
 
 
 if __name__ == '__main__':
