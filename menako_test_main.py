@@ -10,6 +10,7 @@ import numpy as np
 # Load the DataFrame
 df = pd.read_csv(r"diabetes_data.csv")
 df = df.drop(columns = ['Unnamed: 0.1', 'TopicID'])
+cleaned_data = pd.read_csv('cleaned_data.csv')
 
 
 # Initialize the Dash app
@@ -23,6 +24,7 @@ state_count = df['LocationAbbr'].value_counts().reset_index()
 state_count.columns = ['LocationAbbr', 'Count']
 min_year = int(df['Year'].min())
 max_year = int(df['Year'].max())
+min_year_clean = int(cleaned_data['YearStart'].min())
 # df['Year'] = pd.to_datetime(df['Year'], format='%Y')
 
 
@@ -127,6 +129,10 @@ app.layout = html.Div([
         ),
         dcc.Graph(id='line-chart')
     ]),
+
+    html.Div([
+        dcc.Graph(id='correlation-heatmap')
+    ])
 ])    
 
 
@@ -183,10 +189,10 @@ def update_us_heatmap(_):
     [Input('year-slider-1', 'value')]
 )
 def update_us_heatmap(selected_year):
-    filtered_df = df[(df['QuestionID'] == 'DIA01') &
-                     (df['StratificationCategoryID1'] == 'OVERALL') &
-                     (df['DataValueTypeID'] == 'CRDPREV') &
-                     (df['Year'] == selected_year)]
+    filtered_df = cleaned_data[(cleaned_data['QuestionID'] == 'DIA01') &
+                     (cleaned_data['StratificationCategoryID1'] == 'OVERALL') &
+                     (cleaned_data['DataValueTypeID'] == 'CRDPREV') &
+                     (cleaned_data['YearStart'] == selected_year)]
 
     fig = px.choropleth(
         filtered_df,
@@ -318,19 +324,66 @@ def update_line_chart(selected_state):
     
     return fig
 
-# # Callback for updating the correlation heatmap
-# @app.callback(
-#     Output('correlation-heatmap', 'figure'),
-#     Input('table', 'data')
-# )
-# def update_heatmap(_):
-#     corr = df[quantitative_columns].corr()
-#     fig = px.imshow(corr, text_auto=True,
-#                     labels=dict(x="Variables", y="Variables", color="Correlation"),
-#                     x=quantitative_columns,
-#                     y=quantitative_columns,
-#                     title="Correlation Heatmap")
-#     return fig
+# Callback for the correlation heatmap
+@app.callback(
+    Output('correlation-heatmap', 'figure'),
+    [Input('table', 'data')]
+)
+def update_correlation_heatmap(selected_year):
+    dia01 = cleaned_data[(cleaned_data['QuestionID'] == 'DIA01') 
+                     & (cleaned_data['StratificationCategoryID1'] == 'OVERALL') 
+                     & (cleaned_data['DataValueTypeID'] == 'CRDPREV') 
+                    #  & (cleaned_data['LocationAbbr'] == 'AL')
+                     & (cleaned_data['YearStart'] == 2019)
+                     ][['LocationAbbr', 'DataValue']]
+    dia02 = cleaned_data[(cleaned_data['QuestionID'] == 'DIA02') 
+                         & (cleaned_data['StratificationCategoryID1'] == 'OVERALL') 
+                         & (cleaned_data['DataValueTypeID'] == 'CRDPREV') 
+                        #  & (cleaned_data['LocationAbbr'] == 'AL')
+                         & (cleaned_data['YearStart'] == 2019)
+                         ][['LocationAbbr', 'DataValue']]
+    dia03 = cleaned_data[(cleaned_data['QuestionID'] == 'DIA03')
+                         & (cleaned_data['StratificationCategoryID1'] == 'OVERALL')
+                         & (cleaned_data['DataValueTypeID'] == 'CRDRATE') 
+                        #  & (cleaned_data['LocationAbbr'] == 'AL')
+                         & (cleaned_data['YearStart'] == 2019) 
+                         ][['LocationAbbr', 'DataValue']]
+    dia04 = cleaned_data[(cleaned_data['QuestionID'] == 'DIA04')
+                         & (cleaned_data['StratificationCategoryID1'] == 'OVERALL')
+                         & (cleaned_data['DataValueTypeID'] == 'CRDRATE') 
+                        #  & (cleaned_data['LocationAbbr'] == 'AL')
+                         & (cleaned_data['YearStart'] == 2019) 
+                         ][['LocationAbbr', 'DataValue']]
+    final_df = pd.merge(dia01, dia02, on='LocationAbbr', suffixes=('_dia01', '_dia02'))
+    final_df = pd.merge(final_df, dia03, on='LocationAbbr')
+    final_df = pd.merge(final_df, dia04, on='LocationAbbr', suffixes=('_dia03', '_dia04'))
+
+    correlation_matrix = final_df[['DataValue_dia01', 'DataValue_dia02', 'DataValue_dia03', 'DataValue_dia04']].corr()
+
+    fig = go.Figure(data=go.Heatmap(
+        z=np.array(correlation_matrix),
+        x=correlation_matrix.columns,
+        y=correlation_matrix.index,\
+        colorscale='reds',
+        text=np.around(correlation_matrix.to_numpy(), decimals=2),  # round the correlation values to 2 decimals
+        texttemplate="%{text}"))
+
+    # Update layout
+    fig.update_layout(
+        title='Correlation Heatmap',
+        xaxis=dict(title='Variables',
+                   tickmode='array',
+                   tickvals=[0,1,2,3],
+                   ticktext=['DIA01', 'DIA02', 'DIA03', 'DIA04']),
+        yaxis=dict(title='Variables',
+                   tickmode='array',
+                   tickvals=[0,1,2,3],
+                   ticktext=['DIA01', 'DIA02', 'DIA03', 'DIA04']),
+        height=500,  # Adjust the height to your preference
+        width=500   # Adjust the width to your preference
+    )
+
+    return fig
 
 
 if __name__ == '__main__':
