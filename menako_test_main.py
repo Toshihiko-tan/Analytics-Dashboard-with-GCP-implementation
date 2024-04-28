@@ -12,7 +12,7 @@ from sklearn.preprocessing import OneHotEncoder
 
 # Load the DataFrame
 df = pd.read_csv(r"diabetes_data.csv")
-df = df.drop(columns = ['Unnamed: 0.1', 'TopicID'])
+df = df.drop(columns = ['Unnamed: 0.1', 'TopicID', 'Unnamed: 0'])
 cleaned_data = pd.read_csv('cleaned_data.csv')
 final_df = pd.read_csv(r"final_df.csv")
 
@@ -56,6 +56,7 @@ app.layout = html.Div([
 
     html.Div([
         # Bar chart dropdowns and chart
+        html.P("First, we want to display some basic histogram and barplots from the dataset."),
         html.Div([
             html.H2("Bar chart"),
             dcc.Dropdown(
@@ -63,50 +64,58 @@ app.layout = html.Div([
                 options=[{'label': col, 'value': col} for col in categorical_columns],
                 value=categorical_columns[0] if len(categorical_columns) > 0 else None
             ),
-            dcc.Graph(id='bar-chart')
+            dcc.Graph(id='bar-chart'),
+            html.P("For the bar chart of QuestionID, we can see the count of questions representing our predictor variables: DIA02 (Gestational diabetes among women with a recent live birth), DIA03 (Diabetes mortality among all people, underlying or contributing cause), DIA04 (Diabetic ketoacidosis mortality among all people, underlying or contributing cause), and our response variable DIA01 (Diabetes among adults). We can see that DIA03 has the highest count, followed closely by DIA01 and DIA04, while DIA02 has the lowest count."),
         ], style={'width': '50%', 'display': 'inline-block'}),
 
         html.Div([
-            html.H2("Historgram"),
+            html.H2("Histogram"),
             dcc.Dropdown(
                 id='quantitative-variable-dropdown',
                 options=[{'label': i, 'value': i} for i in quantitative_columns],
                 value=quantitative_columns[0]  # Default value is the first quantitative column
             ),
-            dcc.Graph(id='histogram-plot')
+            dcc.Graph(id='histogram-plot'),
+            html.P("For the histogram, we can examine the distribution of the data values and low/high confidence limit. Most of the variables displayed here seem to be heavily skewed to the right."),
         ], style={'width': '50%', 'display': 'inline-block'}),
     ]),
 
     html.Div([
         html.H2("Separate Bar Chart for Different Questions"),
+        html.P("Then, we want to examine the count of different questions by states. Considering that the data points of each state are most likely determined by population size and how active the research of diabetes are in these states, we assumed that the distribution of count of questions by states wouldn't differ too much."),
         html.Div([dcc.Graph(id='bar-chart-dia01')], style={'width': '25%', 'display': 'inline-block'}),
         html.Div([dcc.Graph(id='bar-chart-dia02')], style={'width': '25%', 'display': 'inline-block'}),
         html.Div([dcc.Graph(id='bar-chart-dia03')], style={'width': '25%', 'display': 'inline-block'}),
         html.Div([dcc.Graph(id='bar-chart-dia04')], style={'width': '25%', 'display': 'inline-block'}),
+        html.P("However, the bar chart suggests that the distribution of count of questions by states do differ from questions and questions. While states like California, New York, and Washington mostly have high counts in all four questions, the other states vary quite a lot switching from question to question."),
     ]),
 
     html.Div([    
         # Box plot dropdowns and chart
         html.H2("Box Plot"),
+        html.P("The Boxplot is great for displaying the relationship between different variables and the year they were recorded in. Our assumption is that all the data are conducted in a similar timeframe."),
         dcc.Dropdown(
             id='quantitative-dropdown',
             options=[{'label': col, 'value': col} for col in quantitative_columns],
             value=quantitative_columns[0] if len(quantitative_columns) > 0 else None
         ),
         group_dropdown,  # New dropdown for selecting a group for the box plot
-        dcc.Graph(id='boxplot-chart')
+        dcc.Graph(id='boxplot-chart'),
+        html.P("Indeed, after examine different boxplots between year and multiple other features, like the location where the survey took place, we can confirm that indeed, most of the data are collected in a similar timeframe."),
     ]),
 
     html.Div([
         html.Div([
             html.H2("Diabetes Data Pair Plot for Different Questions"),
-            dcc.Graph(id='pair-plot')
+            html.P("Then, we want to explore the correlation between predictor and response variables. Our assumption is that there is some correlation between the predictor variables, due to the way how these survey questions are structured, and that they are all about the topic of diabetes."),
+            dcc.Graph(id='pair-plot'),
+            html.P("For the predictor variables, we can see from the pair plots that there doesn't seem to be very high correlation between DIA04 and DIA01, DIA02, DIA03. There seems to be some weak positive correlation between DIA02 and DIA03, as well as DIA02 and DIA04. So there indeed seems to be some positive correlation between the predictor variables, like we assumed. For our response variable, We can see that DIA01 seems to have weak positive correlation betwen all DIA02, DIA03, and DIA04."),
         ])
     ]),
 
     html.Div([
         html.H2("Counts for Each States"),
-        html.P("We want to examine the number of data points we have for each state. Our assumption is that the number of data points differ by states, where states with higher population, like New York, California, and Texas have more data points than others."),
+        html.P("Then, we want to examine the total number of data points we have for each state, regardless the question. Our assumption is that the number of data points differ by states, where states with higher population, like New York, California, and Texas have more data points than others."),
         html.P("We have created a heatmap to visualize the data points we have, with colors that are more yellow have more data points than others."),
         html.Div([
             dcc.Graph(id='us-heatmap')
@@ -183,16 +192,29 @@ app.layout = html.Div([
         html.P("Indeed, our assumption is true, and we can see that the Diabetes Ketoacidosis Mortality Rate for male is higher in almost all the states across every year which data is available. In fact, in states like New Mexico, Nevada, and Oklohama, the Diabetes Ketoacidosis Mortality Rate for male is much higher than that of female's mortality rate."),
     ]),
 
-    html.Div(style={'marginBottom': '50px'}),
 
     html.Div([
-        html.P("We have also plotted the predictor variable Mortality Rate of diabetes with a line plot with data from 2019 to 2021. Our assumption is that it does change with time."),
+        html.H2("Mortality Rate Trends", style={'textAlign': 'center'}),
+        html.P("We have also plotted the predictor variables and the response variable with a line plot with data from 2019 to 2021 to show the trend. Our assumption is that it does change with time."),
         dcc.Dropdown(
-                id='state-dropdown',
-                options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique()],
+            id='state-dropdown',
+            options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique()],
+            value=df['LocationAbbr'].unique()[0], 
+            clearable=False
         ),
-        dcc.Graph(id='line-chart'),
-        html.P("After examining the line plot or all the states, we can see that for most of the states, the Mortality Rate of diabetes do increase with time from 2019 to 2021, as the mortality rate of 2021 is generally higher than the mortality rate of 2019. There are, however, some states, like New York, that have a decreasing diabetes mortality rate from 2020 to 2021."),
+        html.Div([
+            dcc.Graph(id='trend-chart-dia01')
+        ], style={'width': '25%', 'display': 'inline-block'}),
+        html.Div([
+            dcc.Graph(id='trend-chart-dia02')
+        ], style={'width': '25%', 'display': 'inline-block'}),
+        html.Div([
+            dcc.Graph(id='trend-chart-dia03')
+        ], style={'width': '25%', 'display': 'inline-block'}),
+        html.Div([
+            dcc.Graph(id='trend-chart-dia04')
+        ], style={'width': '25%', 'display': 'inline-block'}),
+        html.P("After examining the line plot or all the states, we can see that for most of the states, the trend for predictor and response variables are to increase with time from 2019 to 2021. For example, the mortality rate of 2021 is higher than the mortality rate of 2019 for most of the states. There are, however, some states, like New York, that have a decreasing diabetes mortality rate from 2020 to 2021.")
     ]),
 
     html.H2("Correlation Heatmap between Different Questions"),
@@ -470,39 +492,34 @@ def gender_bar_plot(selected_year):
     return fig
 
 @app.callback(
-    Output('line-chart', 'figure'),
-    Input('state-dropdown', 'value')
+    [Output('trend-chart-dia01', 'figure'),
+     Output('trend-chart-dia02', 'figure'),
+     Output('trend-chart-dia03', 'figure'),
+     Output('trend-chart-dia04', 'figure')],
+    [Input('state-dropdown', 'value')]
 )
 
-def update_line_chart(selected_state):
-    # Create a scatter trace
-    mortality_AL = df[(df['QuestionID'] == 'DIA03') & 
-                            (df['StratificationCategoryID1'] == 'OVERALL') &
-                            (df['DataValueTypeID'] == 'CRDRATE') &
-                            (df['LocationAbbr'] == selected_state) 
-                            ][['Year', 'DataValue']]
-    trace = go.Scatter(
-        x=mortality_AL['Year'],
-        y=mortality_AL['DataValue'],
-        mode='lines+markers',
-        name='Mortality Rate for AL'
-    )
-    
-    # Create the figure
-    fig = go.Figure(data=[trace])
+def update_trend_charts(selected_state):
+    figures = []
+    for dia in ['DIA01', 'DIA02', 'DIA03', 'DIA04']:
+        # Filter data for the selected state and QuestionID
+        filtered_data = df[
+            (df['LocationAbbr'] == selected_state) &
+            (df['QuestionID'] == dia)
+        ]
+        # Aggregate counts by year
+        yearly_counts = filtered_data.groupby('Year').size().reset_index(name='Mortality Rate Count')
+        # Create the line chart
+        fig = px.line(
+            yearly_counts, 
+            y='Mortality Rate Count', 
+            x='Year', 
+            title=f"{dia} Trend in {selected_state}"
+        )
 
-    # Update layout
-    fig.update_layout(
-        title=f'Mortality Rate for {selected_state} (2019-2021)',
-        xaxis_title='Year',
-        yaxis_title='DataValue',
-        xaxis=dict(
-            tickmode='array',
-            tickvals=mortality_AL['Year'].unique()
-        )    
-    )
-    
-    return fig
+        fig.update_xaxes(dtick=1)
+        figures.append(fig)
+    return figures
 
 # Callback for the correlation heatmap
 @app.callback(
