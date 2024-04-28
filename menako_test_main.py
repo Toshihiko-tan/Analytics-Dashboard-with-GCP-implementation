@@ -9,10 +9,11 @@ import numpy as np
 import pickle
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
+from data_cleaning_module import diabete_data
+import visualization_and_prediction_module as vp
 
 # Load the DataFrame
-df = pd.read_csv(r"diabetes_data.csv")
-df = df.drop(columns = ['Unnamed: 0.1', 'TopicID', 'Unnamed: 0'])
+df = diabete_data.drop(columns = ['Unnamed: 0.1', 'TopicID', 'Unnamed: 0'])
 cleaned_data = pd.read_csv('cleaned_data.csv')
 final_df = pd.read_csv(r"final_df.csv")
 
@@ -282,15 +283,7 @@ app.layout = html.Div([
     Input('categorical-dropdown', 'value')
 )
 def update_bar_chart(selected_column):
-    if selected_column:
-        fig = px.bar(
-            df[selected_column].value_counts().reset_index(),
-            x='index',
-            y=selected_column,
-            title=f"Counts of {selected_column}"
-        )
-        return fig
-    return {}
+    return vp.update_bar_chart(df, selected_column)
 
 # Callback for updating the boxplot
 @app.callback(
@@ -299,13 +292,7 @@ def update_bar_chart(selected_column):
      Input('group-dropdown', 'value')]  # Take input from the new group dropdown as well
 )
 def update_boxplot(selected_quantitative, selected_group):
-    if selected_quantitative and selected_group:
-        fig = px.box(df, y=selected_quantitative, x=selected_group, 
-                     title=f"Distribution of {selected_quantitative} by {selected_group}", notched=True)
-        return fig
-    return {}
-
-
+    return vp.update_boxplot(df, selected_quantitative, selected_group)
 
 # Callback for updating the histogram
 @app.callback(
@@ -313,19 +300,10 @@ def update_boxplot(selected_quantitative, selected_group):
     Input('quantitative-variable-dropdown', 'value')
 )
 def update_histogram(selected_variable):
-    # Create the histogram using Plotly Express
-    fig = px.histogram(df, x=selected_variable, nbins=30, title=f'Distribution of {selected_variable}')
-    return fig
+    return vp.update_histogram(df, selected_variable)
 
 def create_bar_chart_for_dia(dia_number):
-    # Filter the DataFrame for the specified DIA number
-    filtered_df = df[df['QuestionID'] == dia_number]
-    # Aggregate by state
-    aggregated_data = filtered_df.groupby('LocationAbbr').size().reset_index(name='Count')
-    # Create the bar chart
-    fig = px.bar(aggregated_data, x='LocationAbbr', y='Count', title=f'Counts for {dia_number}')
-    return fig
-
+    return vp.create_bar_chart_for_dia(df, dia_number)
 
 # Callbacks for updating each bar chart
 @app.callback(Output('bar-chart-dia01', 'figure'), [Input('categorical-dropdown', 'value')])
@@ -351,61 +329,23 @@ def update_bar_chart_dia04(_):
 )    
 
 def update_pair_plot(_):
-    fig=px.scatter_matrix(
-        final_df,
-        dimensions=['DataValue_dia01','DataValue_dia02','DataValue_dia03','DataValue_dia04'],
-        title="Pair plot for different questions"
-    )
-    axis_titles = {
-    'DataValue_dia01': 'DIA01',
-    'DataValue_dia02':'DIA02',
-    'DataValue_dia03':'DIA03',
-    'DataValue_dia04':'DIA04'
-    }
-
-    # Update x and y axis labels
-    for i, dim in enumerate(fig.data[0].dimensions):
-        dim.label = axis_titles[dim.label]
-    return fig
+    return vp.update_pair_plot(final_df)
 
 # Callback for updating the us-heatmap for counts
 @app.callback(
     Output('us-heatmap', 'figure'),
     Input('table', 'data')
 )
-def update_us_heatmap(_):
-    fig = px.choropleth(
-        state_count, 
-        locations='LocationAbbr', 
-        locationmode="USA-states", 
-        color='Count',  # This should be the column from your DataFrame that holds the counts
-        scope="usa",
-        title="Value Counts by State"
-    )
-    return fig
+def update_us_heatmap_state(_):
+    return vp.update_us_heatmap_state(df, state_count)
 
 # Callback for us-heatmap for DIA01
 @app.callback(
     Output('us-heatmap-DIA01', 'figure'),
     [Input('year-slider-1', 'value')]
 )
-def update_us_heatmap(selected_year):
-    filtered_df = df[(df['QuestionID'] == 'DIA01') &
-                     (df['StratificationCategoryID1'] == 'OVERALL') &
-                     (df['DataValueTypeID'] == 'CRDPREV') &
-                     (df['Year'] == selected_year)]
-
-    fig = px.choropleth(
-        filtered_df,
-        locations='LocationAbbr',  # State abbreviations
-        locationmode="USA-states",
-        color='DataValue',  # Data to be visualized
-        scope="usa",
-        title=f"Data for Question: \"Diabetes among adults\" in {selected_year}",
-        color_continuous_scale=px.colors.sequential.Teal,
-        labels={'DataValue': 'Value'}
-    )
-    return fig
+def update_us_heatmap(selected_year, question_id='DIA01'):
+    return vp.update_us_heatmap(df, selected_year, question_id)
 
 
 # Callback for us-heatmap for DIA02
@@ -413,23 +353,8 @@ def update_us_heatmap(selected_year):
     Output('us-heatmap-DIA02', 'figure'),
     [Input('year-slider-2', 'value')]
 )
-def update_us_heatmap(selected_year):
-    filtered_df = df[(df['QuestionID'] == 'DIA02') &
-                     (df['StratificationCategoryID1'] == 'OVERALL') &
-                     (df['DataValueTypeID'] == 'CRDPREV') &
-                     (df['Year'] == selected_year)]
-
-    fig = px.choropleth(
-        filtered_df,
-        locations='LocationAbbr',  # State abbreviations
-        locationmode="USA-states",
-        color='DataValue',  # Data to be visualized
-        scope="usa",
-        title=f"Data for Question: \"Gestational diabetes among women with a recent live birth\" in {selected_year}",
-        color_continuous_scale=px.colors.sequential.Teal,
-        labels={'DataValue': 'Value'}
-    )
-    return fig
+def update_us_heatmap(selected_year, question_id='DIA02'):
+    return vp.update_us_heatmap(df, selected_year, question_id)
 
 # Callback for state and race
 @app.callback(
@@ -437,29 +362,7 @@ def update_us_heatmap(selected_year):
     Input('year-slider-3', 'value')
 )
 def state_race(selected_year):
-    filtered_data = df[(df['QuestionID'] == 'DIA04') &
-                    (df['StratificationCategoryID1'] == 'RACE') &
-                    (df['DataValueTypeID'] == 'CRDRATE') &
-                    (df['Year'] == selected_year)]
-    pivot_data = filtered_data.pivot_table(
-    values='DataValue',
-    index='StratificationID1', 
-    columns='LocationAbbr', 
-    )
-
-    fig = px.imshow(
-        pivot_data,
-        labels=dict(x="State", y="Race", color="Mortality Rate"),
-        x=pivot_data.columns,
-        y=pivot_data.index,
-        title=f"Diabetes Ketoacidosis Mortality Rate per 100,000 by State and Race in {selected_year}",
-        aspect="auto",
-        color_continuous_scale='Blues'
-    )
-
-    # Adding text to each cell manually
-    fig.update_traces(texttemplate="%{z:.1f}", textfont={"size": 10})
-    return fig
+    return vp.state_race(df, selected_year)
 
 # Create gender comparison bar plot
 @app.callback(
@@ -468,28 +371,7 @@ def state_race(selected_year):
 )
 
 def gender_bar_plot(selected_year):
-    gender_filtered_data = df[
-        (df['QuestionID'] == 'DIA04') &
-        (df['Year'] == selected_year) &
-        (df['StratificationCategoryID1'] == 'SEX') &
-        (df['DataValueTypeID'] == 'CRDRATE')
-    ]
-    pivot_gender_data = gender_filtered_data.pivot_table(
-        values='DataValue',
-        index='LocationAbbr',
-        columns='StratificationID1',
-    )
-    # Create a bar plot using Plotly to compare male vs. female diabetes mortality rates by state
-    fig = px.bar(
-        pivot_gender_data.reset_index(),
-        x='LocationAbbr',
-        y=['SEXF', 'SEXM'],
-        title=f"Comparison of Sex Ketoacidosis Diabetes Mortality Rates by State in {selected_year}",
-        labels={'value': 'Mortality Rate per 100,000', 'variable': 'Gender'},
-        barmode='group',
-        color_discrete_map={'SEXF': 'pink', 'SEXM': 'lightblue'}
-    )
-    return fig
+    return vp.gender_bar_plot(df, selected_year)
 
 @app.callback(
     [Output('trend-chart-dia01', 'figure'),
@@ -500,26 +382,7 @@ def gender_bar_plot(selected_year):
 )
 
 def update_trend_charts(selected_state):
-    figures = []
-    for dia in ['DIA01', 'DIA02', 'DIA03', 'DIA04']:
-        # Filter data for the selected state and QuestionID
-        filtered_data = df[
-            (df['LocationAbbr'] == selected_state) &
-            (df['QuestionID'] == dia)
-        ]
-        # Aggregate counts by year
-        yearly_counts = filtered_data.groupby('Year').size().reset_index(name='Mortality Rate Count')
-        # Create the line chart
-        fig = px.line(
-            yearly_counts, 
-            y='Mortality Rate Count', 
-            x='Year', 
-            title=f"{dia} Trend in {selected_state}"
-        )
-
-        fig.update_xaxes(dtick=1)
-        figures.append(fig)
-    return figures
+    return vp.update_trend_charts(df, selected_state)
 
 # Callback for the correlation heatmap
 @app.callback(
@@ -527,32 +390,7 @@ def update_trend_charts(selected_state):
     [Input('table', 'data')]
 )
 def update_correlation_heatmap(selected_year):
-    correlation_matrix = final_df[['DataValue_dia01', 'DataValue_dia02', 'DataValue_dia03', 'DataValue_dia04']].corr()
-
-    fig = go.Figure(data=go.Heatmap(
-        z=np.array(correlation_matrix),
-        x=correlation_matrix.columns,
-        y=correlation_matrix.index,\
-        colorscale='reds',
-        text=np.around(correlation_matrix.to_numpy(), decimals=2),  # round the correlation values to 2 decimals
-        texttemplate="%{text}"))
-
-    # Update layout
-    fig.update_layout(
-        title='Correlation Heatmap between questions',
-        xaxis=dict(title='Variables',
-                   tickmode='array',
-                   tickvals=[0,1,2,3],
-                   ticktext=['DIA01', 'DIA02', 'DIA03', 'DIA04']),
-        yaxis=dict(title='Variables',
-                   tickmode='array',
-                   tickvals=[0,1,2,3],
-                   ticktext=['DIA01', 'DIA02', 'DIA03', 'DIA04']),
-        height=500,  # Adjust the height to your preference
-        width=500   # Adjust the width to your preference
-    )
-
-    return fig
+    return vp.update_correlation_heatmap(final_df, selected_year)
 
 # Callback for MSE and R-squared Graph
 @app.callback(
