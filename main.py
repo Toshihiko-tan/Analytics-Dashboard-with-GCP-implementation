@@ -246,7 +246,7 @@ app.layout = html.Div([
                 html.Label('State:', style={'margin-right': '10px'}),
                 dcc.Dropdown(
                     id='state-dropdown-linear',
-                    options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique()],
+                    options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique() if col not in ['VT', 'VI', 'CA', 'AK', 'GU', 'ID', 'IN', 'HI', 'NV', 'OH', 'SC', 'RI', 'PR', 'TX']],
                     style={'width': '300px'}  # Adjust the width as needed
                 )
             ], style={'display': 'flex', 'alignItems': 'center', 'margin-bottom': '10px'}),
