@@ -21,6 +21,7 @@ final_df = pd.read_csv(r"Data/final_df.csv")
 
 # Initialize the Dash app
 app = dash.Dash(__name__)
+server = app.server
 
 # Divide the df to categorical variables and quantitative variables
 categorical_columns = df.select_dtypes(include=['object']).columns
@@ -472,4 +473,4 @@ def update_output(n_clicks, location, year, dia02, dia03, dia04):
     return um.get_prediction_text(n_clicks, location, year, dia02, dia03, dia04)
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, port = 8080)
