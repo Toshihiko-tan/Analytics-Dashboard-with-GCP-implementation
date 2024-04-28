@@ -192,15 +192,27 @@ app.layout = html.Div([
     ]),
 
     html.Div([
-        html.H3("Line Chart", style={'textAlign': 'center'}),
+        html.H3("Mortality Rate Trends", style={'textAlign': 'center'}),
         dcc.Dropdown(
-                id='state-dropdown',
-                options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique()],
-                value=locations[0], 
-                clearable=False
+            id='state-dropdown',
+            options=[{'label': col, 'value': col} for col in df['LocationAbbr'].unique()],
+            value=df['LocationAbbr'].unique()[0], 
+            clearable=False
         ),
-        dcc.Graph(id='line-chart')
-    ]),
+        html.Div([
+            dcc.Graph(id='trend-chart-dia01')
+        ], style={'width': '25%', 'display': 'inline-block'}),
+        html.Div([
+            dcc.Graph(id='trend-chart-dia02')
+        ], style={'width': '25%', 'display': 'inline-block'}),
+        html.Div([
+            dcc.Graph(id='trend-chart-dia03')
+        ], style={'width': '25%', 'display': 'inline-block'}),
+        html.Div([
+            dcc.Graph(id='trend-chart-dia04')
+        ], style={'width': '25%', 'display': 'inline-block'}),
+    ])
+
 ])    
 
 
@@ -419,37 +431,33 @@ def update_pair_plot(selected_variables):
 
 # line chart
 @app.callback(
-    Output('line-chart', 'figure'),
-    Input('state-dropdown', 'value')
+    [Output('trend-chart-dia01', 'figure'),
+     Output('trend-chart-dia02', 'figure'),
+     Output('trend-chart-dia03', 'figure'),
+     Output('trend-chart-dia04', 'figure')],
+    [Input('state-dropdown', 'value')]
 )
-
-def update_line_chart(selected_state):
-    # Create a scatter trace
-    mortality_AL = df[(df['QuestionID'] == 'DIA03') & 
-                            (df['StratificationCategoryID1'] == 'OVERALL') &
-                            (df['DataValueTypeID'] == 'CRDRATE') &
-                            (df['LocationAbbr'] == selected_state) 
-                            ][['Year', 'DataValue']]
-    trace = go.Scatter(
-        x=mortality_AL['Year'],
-        y=mortality_AL['DataValue'],
-        mode='lines+markers',
-        name='Mortality Rate for AL'
-    )
-    
-    fig = go.Figure(data=[trace])
-
-    fig.update_layout(
-        title=f'Mortality Rate for {selected_state} (2019-2021)',
-        xaxis_title='Year',
-        yaxis_title='DataValue',
-        xaxis=dict(
-            tickmode='array',
-            tickvals=mortality_AL['Year'].unique()
-        )    
-    )
-    
-    return fig
+def update_trend_charts(selected_state):
+    figures = []
+    for dia in ['DIA01', 'DIA02', 'DIA03', 'DIA04']:
+        # Filter data for the selected state and QuestionID
+        filtered_data = df[
+            (df['LocationAbbr'] == selected_state) &
+            (df['QuestionID'] == dia)
+        ]
+        # Aggregate counts by year
+        yearly_counts = filtered_data.groupby('Year').size().reset_index(name='Mortality Rate Count')
+        # Create the line chart
+        fig = px.line(
+            yearly_counts, 
+            y='Mortality Rate Count', 
+            x='Year', 
+            title=f"{dia} - Mortality Rate Trend in {selected_state}"
+        )
+        
+        fig.update_xaxes(dtick=1)
+        figures.append(fig)
+    return figures
 
 
 
