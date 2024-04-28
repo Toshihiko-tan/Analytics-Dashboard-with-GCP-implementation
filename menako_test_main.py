@@ -274,6 +274,23 @@ app.layout = html.Div([
     
     html.Div(id='prediction-output-linear', style={'textAlign': 'center'})
     ]),
+    
+    html.Div([
+        html.H2("Conclusion", style={'textAlign': 'center'}),
+        html.P("""To explore the prevalence of diabetes across different states, we focused on "DataValue_dia01," which represents the percentage of adults diagnosed with diabetes. This variable served as our response variable in the analysis. To identify relevant predictors, we meticulously selected variables from the dataset that potentially correlate with the diabetes prevalence, and also incorporated variables that specifically interested us, such as variables representing the year and region.
+
+Utilizing a correlation matrix, we analyzed the relationships between variables and selected "DataValue_dia02," "DataValue_dia03," "DataValue_dia04," "LocationAbbr," and "YearStart" as our predictors. These variables are particularly significant as:
+
+"DataValue_dia02" represents the percentage of Gestational diabetes among women with a recent live birth.
+"DataValue_dia03" indicates the proportion of diabetes-related mortality across the population.
+"DataValue_dia04" measures the percentage of diabetic ketoacidosis mortality.
+"LocationAbbr" represents the abbreviations of each state, and "YearStart" indicates the year when data collection began. By using Variance Inflation Factor (VIF) analysis, we verified that "DataValue_dia02," "DataValue_dia03," and "DataValue_dia04" each had a VIF value less than 5, suggesting negligible multicollinearity among these variables. This finding justified the inclusion of these three continuous variables, along with "YearStart" and "LocationAbbr," as predictors in our model.
+
+We explored six regression models: Linear Regression, Random Forest, Ridge Regression, Lasso Regression, Support Vector Machine (SVM), and Decision Tree. We utilized R-square and Mean Squared Error (MSE) to evaluate these models. Due to the limited data availability for certain states, we encountered challenges in employing cross-validation, which could potentially leave some state data untrained if allocated to test data. To demonstrate our evaluation approach, we manually selected four data points as test data, using the remainder for training, which provided us with an estimation of MSE.
+
+Our analysis found that Linear Regression yielded an impressive R-square of 0.9836 and the lowest MSE of 0.5155. Although the Decision Tree model showed a perfect R-square of 1, this was indicative of overfitting. Random Forest and Ridge Regression also performed well, with R-square values of 0.9227 and 0.9148, and MSEs of 3.2373 and 1.1676, respectively. However, considering the superior interpretability and outstanding performance of the Linear Regression model, we decided it was the most appropriate model for our study. This decision allows us to clearly communicate the impact of various factors on diabetes prevalence, which is essential for informing public health policies and interventions.
+""")
+    ]),
 
 ])    
 
