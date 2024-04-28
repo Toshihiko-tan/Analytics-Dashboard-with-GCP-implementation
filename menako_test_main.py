@@ -11,6 +11,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
 from data_cleaning_module import diabete_data
 import visualization_and_prediction_module as vp
+import utility_module as um
 
 # Load the DataFrame
 df = diabete_data.drop(columns = ['Unnamed: 0.1', 'TopicID', 'Unnamed: 0'])
@@ -450,31 +451,8 @@ def update_r_squared_graph(_):
      State('dia03-linear', 'value'),
      State('dia04-linear', 'value')]
 )
-def predict(n_clicks, location, year, dia02, dia03, dia04):
-    with open('linear_model.pkl', 'rb') as file:
-        model = pickle.load(file)
-    if n_clicks > 0:
-        # Create an input DataFrame or array depending on your model's expected input
-        input_features = [location, year, dia02, dia03, dia04]
-        
-        # Assuming the model expects a DataFrame with specific column names
-        test_data = pd.DataFrame([input_features], 
-                    columns=['LocationAbbr','YearStart', 'DataValue_dia02', 'DataValue_dia03', 'DataValue_dia04'])
-        
-        columns_to_encode = ['LocationAbbr']
-
-        # Perform one-hot encoding
-        ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), columns_to_encode)], remainder='passthrough')
-        merged_df = pd.read_csv("merged_df.csv")
-        x_train = merged_df.drop(['DataValue_dia01'], axis=1)
-        x_train_encoded = ct.fit_transform(x_train)
-        test_data_encoded = ct.transform(test_data)
-        # Make prediction
-        prediction = model.predict(test_data_encoded)
-        return f'Predicted DIA01: {prediction[0]}'
-
-    return 'Enter values and press predict.'
-
+def update_output(n_clicks, location, year, dia02, dia03, dia04):
+    return um.get_prediction_text(n_clicks, location, year, dia02, dia03, dia04)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
