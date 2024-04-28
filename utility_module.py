@@ -16,7 +16,7 @@ def prepare_input(location, year, dia02, dia03, dia04):
                              columns=['LocationAbbr', 'YearStart', 'DataValue_dia02', 'DataValue_dia03', 'DataValue_dia04'])
     return test_data
 
-def encode_features(df, encoder, train_df_path="merged_df.csv"):
+def encode_features(df, encoder, train_df_path="Data/merged_df.csv"):
     """Encode categorical features using one-hot encoding."""
     # Load training data to fit the encoder
     train_df = pd.read_csv(train_df_path)

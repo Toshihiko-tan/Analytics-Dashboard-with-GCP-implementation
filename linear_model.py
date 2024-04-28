@@ -7,7 +7,7 @@ import pickle
 
 
 
-cleaned_data = pd.read_csv('cleaned_data.csv')
+cleaned_data = pd.read_csv('Data/cleaned_data.csv')
 dia01 = cleaned_data[(cleaned_data['QuestionID'] == 'DIA01') 
                      & (cleaned_data['StratificationCategoryID1'] == 'OVERALL') 
                      & (cleaned_data['DataValueTypeID'] == 'CRDPREV') 
