@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # %%
-df_raw = pd.read_csv("U.S._Chronic_Disease_Indicators.csv")
+df_raw = pd.read_csv("Data/U.S._Chronic_Disease_Indicators.csv")
 
 # Drop columns that only contain na values
 na_columns = ['Response', 'StratificationCategory2', 'Stratification2', 
@@ -37,7 +37,7 @@ df = df.drop(columns=['DataValueFootnote', 'DataValueFootnoteSymbol'])
 df_diabete = df[df['TopicID'] == 'DIA']
 df_diabete.describe()
 # %%
-diabete_data = pd.read_csv("diabetes_data.csv")
+diabete_data = pd.read_csv("Data/diabetes_data.csv")
 # diabete_data['Year'] = diabete_data['YearStart']
 # diabete_data = diabete_data.drop(columns=['YearStart', 'YearEnd'])
-# diabete_data.to_csv('diabetes_data.csv')
+# diabete_data.to_csv('Data/diabetes_data.csv')
